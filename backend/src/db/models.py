@@ -80,8 +80,7 @@ class CartItem(ItemBase):
 
 class Cart(Base):
     __tablename__ = 'carts'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), primary_key=True, nullable=False)
 
     items: Mapped[list["CartItem"]] = relationship('CartItem', lazy="selectin", cascade="all, delete-orphan")
 

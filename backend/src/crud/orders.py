@@ -1,33 +1,21 @@
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import base
 from src.custom_types import OrderStatus
 from src.db import models
-from src.schemas.order import OrderIn
 
 
-async def get_by_id(order_id: int, db: AsyncSession) -> models.Order | None:
-    return await base.get_one(select(models.Order).filter(models.Order.id == order_id), db)
+class OrderCrud(base.Retrievable):
+    def __init__(self):
+        super().__init__(models.Order, models.Order.id)
 
+    async def get_by_user(self, user_id: int, db: AsyncSession) -> list[models.Order] | None:
+        return await self._get_all(self._model.user_id == user_id, db)
 
-async def get_by_user(user_id: int, db: AsyncSession) -> list[models.Order] | None:
-    return await base.get_all(select(models.Order).filter(models.Order.user_id == user_id), db)
+    async def update_status(self, order_id: int, new_status: OrderStatus, db: AsyncSession):
+        order = await self.get_one(order_id, db)
+        order.status = new_status
 
-
-async def create(order: OrderIn, user_id: int, db: AsyncSession) -> models.Order | None:
-    return await base.create(models.Order(
-        user_id=user_id,
-        **order.model_dump()
-    ), db)
-
-
-async def update_status(order_id: int, new_status: OrderStatus, db: AsyncSession):
-    await base.update_property(select(models.Order).filter(models.Order.id == order_id),
-                               'status', new_status, db)
-
-
-async def pay_order(order_id: int, db: AsyncSession):
-    await base.update_property(select(models.Order).filter(models.Order.id == order_id),
-                               'is_paid', True, db)
-
+    async def pay_order(self, order_id: int, db: AsyncSession):
+        order = await self.get_one(order_id, db)
+        order.is_paid = True
