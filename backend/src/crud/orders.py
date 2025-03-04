@@ -19,3 +19,6 @@ class OrderCrud(base.Retrievable):
     async def pay_order(self, order_id: int, db: AsyncSession):
         order = await self.get_one(order_id, db)
         order.is_paid = True
+
+
+orders = OrderCrud()

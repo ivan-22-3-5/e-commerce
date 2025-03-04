@@ -12,3 +12,6 @@ class CategoryCrud(base.Deletable):
         category = await self.get_one(category_name, db)
         if category:
             category.products.append(product)
+
+
+categories = CategoryCrud()

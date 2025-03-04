@@ -10,3 +10,6 @@ class ReviewsCrud(base.Deletable):
 
     async def get_by_user(self, user_id: int, db: AsyncSession) -> list[models.Review]:
         return await self._get_all(models.Review.user_id == user_id, db)
+
+
+reviews = ReviewsCrud()

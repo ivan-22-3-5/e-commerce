@@ -10,3 +10,6 @@ class ProductCrud(base.Updatable, base.Deletable):
 
     async def get_all(self, *, enabled: bool | None = None, db: AsyncSession) -> list[models.Product] | None:
         return await self._get_all(models.Product.enabled == enabled if enabled is not None else True, db)
+
+
+products = ProductCrud()

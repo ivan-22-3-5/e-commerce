@@ -1,8 +1,5 @@
 from typing import Type
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.crud import base
 from src.db import models
 

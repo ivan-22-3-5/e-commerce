@@ -19,3 +19,6 @@ class UserCrud(base.Retrievable):
     async def confirm_email(self, user_id: int, db: AsyncSession):
         user = await self.get_one(user_id, db)
         user.is_confirmed = True
+
+
+users = UserCrud()

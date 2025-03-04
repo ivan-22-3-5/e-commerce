@@ -29,7 +29,7 @@ class Retrievable(CrudBase):
 
 
 class Updatable(Retrievable):
-    async def update(self, key: int, obj_update: ObjUpdate, db: AsyncSession):
+    async def update(self, key, obj_update: ObjUpdate, db: AsyncSession):
         obj_to_update = await self.get_one(key, db)
         if obj_to_update:
             for k, v in obj_update.model_dump(exclude_none=True).items():
@@ -37,7 +37,7 @@ class Updatable(Retrievable):
 
 
 class Deletable(Retrievable):
-    async def delete(self, key: int, db: AsyncSession):
+    async def delete(self, key, db: AsyncSession):
         obj_to_delete = await self.get_one(key, db)
         if obj_to_delete:
             await db.delete(obj_to_delete)
