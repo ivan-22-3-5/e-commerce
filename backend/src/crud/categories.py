@@ -1,17 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud import base
+from src.crud.base import Retrievable, Deletable
 from src.db import models
 
 
-class CategoryCrud(base.Deletable):
-    def __init__(self):
-        super().__init__(models.Category, models.Category.name)
+class CategoryCrud(Retrievable, Deletable):
+    model = models.Category
+    key = models.Category.name
 
-    async def add_product(self, category_name: str, product: models.Product, db: AsyncSession):
-        category = await self.get_one(category_name, db)
+    @classmethod
+    async def add_product(cls, category_name: str, product: models.Product, db: AsyncSession):
+        category = await cls.get_one(category_name, db)
         if category:
             category.products.append(product)
-
-
-categories = CategoryCrud()

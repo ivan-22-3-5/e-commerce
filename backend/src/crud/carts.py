@@ -1,38 +1,38 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud import base
+from src.crud.base import Retrievable
 from src.crud.products import products
 from src.db import models
 from src.schemas.item import ItemIn
 
 
-class CartCrud(base.Retrievable):
-    def __init__(self):
-        super().__init__(models.Cart, models.Cart.user_id)
+class CartCrud(Retrievable):
+    model = models.Cart
+    key = models.Cart.user_id
 
-    async def add_item(self, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
-        cart = await self.get_one(user_id, db)
+    @classmethod
+    async def add_item(cls, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
+        cart = await cls.get_one(user_id, db)
         if cart and await products.get_one(item.product_id, db):
             cart.add_item(**item.model_dump())
             await db.commit()
             await db.refresh(cart)
             return cart
 
-    async def remove_item(self, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
-        cart = await self.get_one(user_id, db)
+    @classmethod
+    async def remove_item(cls, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
+        cart = await cls.get_one(user_id, db)
         if cart:
             cart.remove_item(**item.model_dump())
             await db.commit()
             await db.refresh(cart)
             return cart
 
-    async def clear(self, user_id: int, db: AsyncSession) -> models.Cart | None:
-        cart = await self.get_one(user_id, db)
+    @classmethod
+    async def clear(cls, user_id: int, db: AsyncSession) -> models.Cart | None:
+        cart = await cls.get_one(user_id, db)
         if cart:
             cart.clear()
             await db.commit()
             await db.refresh(cart)
             return cart
-
-
-carts = CartCrud()

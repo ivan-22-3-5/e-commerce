@@ -1,15 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud import base
+from src.crud.base import Retrievable, Updatable, Deletable
 from src.db import models
 
 
-class AddressCrud(base.Updatable, base.Deletable):
-    def __init__(self):
-        super().__init__(models.Address, models.Address.id)
+class AddressCRUD(Retrievable, Updatable, Deletable):
+    model = models.Address
+    key = models.Address.id
 
-    async def get_by_user(self, user_id: int, db: AsyncSession) -> models.Address | None:
-        return await self._get_all(self._model.user_id == user_id, db)
-
-
-addresses = AddressCrud()
+    @classmethod
+    async def get_by_user(cls, user_id: int, db: AsyncSession) -> models.Address | None:
+        return await cls._get_all(cls.model.user_id == user_id, db)

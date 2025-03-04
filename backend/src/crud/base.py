@@ -4,40 +4,58 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.base import ObjUpdate
 
 
-class CrudBase:
-    def __init__(self, model, key):
-        self._model = model
-        self._key = key
+class _CrudBase:
+    model = None
+    key = None
 
-
-class Retrievable(CrudBase):
-    async def get_one(self, key, db: AsyncSession):
-        result = await db.execute(select(self._model).filter(self._key == key))
+    @classmethod
+    async def _get_one(cls, criteria, db: AsyncSession):
+        result = await db.execute(select(cls.model).filter(criteria))
         return result.scalars().first()
 
-    async def get_all(self, key, db: AsyncSession):
-        result = await db.execute(select(self._model).filter(self._key == key))
-        return result.scalars().all()
-
-    async def _get_one(self, criteria, db: AsyncSession):
-        result = await db.execute(select(self._model).filter(criteria))
-        return result.scalars().first()
-
-    async def _get_all(self, criteria, db: AsyncSession):
-        result = await db.execute(select(self._model).filter(criteria))
+    @classmethod
+    async def _get_all(cls, criteria, db: AsyncSession):
+        result = await db.execute(select(cls.model).filter(criteria))
         return result.scalars().all()
 
 
-class Updatable(Retrievable):
-    async def update(self, key, obj_update: ObjUpdate, db: AsyncSession):
-        obj_to_update = await self.get_one(key, db)
+class Retrievable(_CrudBase):
+    @classmethod
+    async def get_one(cls, key, db: AsyncSession):
+        return await cls._get_one(cls.key == key, db)
+
+    @classmethod
+    async def get_all(cls, key, db: AsyncSession):
+        return await cls._get_all(cls.key == key, db)
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.model is None or cls.key is None:
+            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
+
+
+class Updatable(_CrudBase):
+    @classmethod
+    async def update(cls, key, obj_update: ObjUpdate, db: AsyncSession):
+        obj_to_update = await cls._get_one(cls.key == key, db)
         if obj_to_update:
             for k, v in obj_update.model_dump(exclude_none=True).items():
                 setattr(obj_to_update, k, v)
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.model is None or cls.key is None:
+            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
 
-class Deletable(Retrievable):
-    async def delete(self, key, db: AsyncSession):
-        obj_to_delete = await self.get_one(key, db)
+
+class Deletable(_CrudBase):
+    @classmethod
+    async def delete(cls, key, db: AsyncSession):
+        obj_to_delete = await cls._get_one(cls.key == key, db)
         if obj_to_delete:
             await db.delete(obj_to_delete)
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.model is None or cls.key is None:
+            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
