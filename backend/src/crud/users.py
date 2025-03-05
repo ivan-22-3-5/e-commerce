@@ -1,11 +1,11 @@
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable
+from src.crud.base import Retrievable, Creatable
 from src.db import models
 
 
-class UserCRUD(Retrievable):
+class UserCRUD(Creatable, Retrievable):
     model = models.User
     key = models.User.id
 

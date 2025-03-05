@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable
+from src.crud.base import Retrievable, Creatable
 from src.crud.products import ProductCRUD
 from src.db import models
 from src.schemas.item import ItemIn
 
 
-class CartCRUD(Retrievable):
+class CartCRUD(Creatable, Retrievable):
     model = models.Cart
     key = models.Cart.user_id
 

@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas.base import ObjUpdate
@@ -17,6 +18,21 @@ class _CRUDBase:
     async def _get_all(cls, criteria, db: AsyncSession):
         result = await db.execute(select(cls.model).filter(criteria))
         return result.scalars().all()
+
+
+class Creatable(_CRUDBase):
+    @classmethod
+    async def create(cls, obj, db: AsyncSession):
+        try:
+            db.add(obj)
+            await db.flush()
+        except IntegrityError as e:
+            print(e)
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.model is None:
+            raise TypeError(f"Class {cls.__name__} must define 'model' class attribute.")
 
 
 class Retrievable(_CRUDBase):

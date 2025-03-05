@@ -1,7 +1,7 @@
-from src.crud.base import Retrievable
+from src.crud.base import Retrievable, Creatable
 from src.db import models
 
 
-class PaymentCRUD(Retrievable):
+class PaymentCRUD(Creatable, Retrievable):
     model = models.Payment
     key = models.Payment.id

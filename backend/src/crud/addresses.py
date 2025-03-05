@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable, Updatable, Deletable
+from src.crud.base import Retrievable, Updatable, Deletable, Creatable
 from src.db import models
 
 
-class AddressCRUD(Retrievable, Updatable, Deletable):
+class AddressCRUD(Creatable, Retrievable, Updatable, Deletable):
     model = models.Address
     key = models.Address.id
 

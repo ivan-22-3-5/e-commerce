@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable
+from src.crud.base import Retrievable, Creatable
 from src.custom_types import OrderStatus
 from src.db import models
 
 
-class OrderCRUD(Retrievable):
+class OrderCRUD(Creatable, Retrievable):
     model = models.Order
     key = models.Order.id
 

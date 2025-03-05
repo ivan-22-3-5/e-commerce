@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable, Deletable
+from src.crud.base import Retrievable, Deletable, Creatable
 from src.db import models
 
 
-class ReviewsCRUD(Retrievable, Deletable):
+class ReviewsCRUD(Creatable, Retrievable, Deletable):
     model = models.Review
     key = models.Review.id
 

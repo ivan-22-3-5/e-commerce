@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable, Updatable, Deletable
+from src.crud.base import Retrievable, Updatable, Deletable, Creatable
 from src.db import models
 
 
-class ProductCRUD(Retrievable, Updatable, Deletable):
+class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
     model = models.Product
     key = models.Product.id
 
