@@ -5,7 +5,7 @@ from src.custom_types import OrderStatus
 from src.db import models
 
 
-class OrderCrud(Retrievable):
+class OrderCRUD(Retrievable):
     model = models.Order
     key = models.Order.id
 

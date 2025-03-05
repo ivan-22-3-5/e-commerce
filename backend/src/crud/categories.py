@@ -4,7 +4,7 @@ from src.crud.base import Retrievable, Deletable
 from src.db import models
 
 
-class CategoryCrud(Retrievable, Deletable):
+class CategoryCRUD(Retrievable, Deletable):
     model = models.Category
     key = models.Category.name
 

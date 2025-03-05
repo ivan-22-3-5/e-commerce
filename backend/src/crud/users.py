@@ -5,7 +5,7 @@ from src.crud.base import Retrievable
 from src.db import models
 
 
-class UserCrud(Retrievable):
+class UserCRUD(Retrievable):
     model = models.User
     key = models.User.id
 

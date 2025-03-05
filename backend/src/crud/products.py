@@ -4,7 +4,7 @@ from src.crud.base import Retrievable, Updatable, Deletable
 from src.db import models
 
 
-class ProductCrud(Retrievable, Updatable, Deletable):
+class ProductCRUD(Retrievable, Updatable, Deletable):
     model = models.Product
     key = models.Product.id
 

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.base import ObjUpdate
 
 
-class _CrudBase:
+class _CRUDBase:
     model = None
     key = None
 
@@ -19,7 +19,7 @@ class _CrudBase:
         return result.scalars().all()
 
 
-class Retrievable(_CrudBase):
+class Retrievable(_CRUDBase):
     @classmethod
     async def get_one(cls, key, db: AsyncSession):
         return await cls._get_one(cls.key == key, db)
@@ -34,7 +34,7 @@ class Retrievable(_CrudBase):
             raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
 
 
-class Updatable(_CrudBase):
+class Updatable(_CRUDBase):
     @classmethod
     async def update(cls, key, obj_update: ObjUpdate, db: AsyncSession):
         obj_to_update = await cls._get_one(cls.key == key, db)
@@ -48,7 +48,7 @@ class Updatable(_CrudBase):
             raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
 
 
-class Deletable(_CrudBase):
+class Deletable(_CRUDBase):
     @classmethod
     async def delete(cls, key, db: AsyncSession):
         obj_to_delete = await cls._get_one(cls.key == key, db)

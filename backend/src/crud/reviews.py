@@ -4,7 +4,7 @@ from src.crud.base import Retrievable, Deletable
 from src.db import models
 
 
-class ReviewsCrud(Retrievable, Deletable):
+class ReviewsCRUD(Retrievable, Deletable):
     model = models.Review
     key = models.Review.id
 
