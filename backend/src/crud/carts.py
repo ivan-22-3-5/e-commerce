@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud.base import Retrievable
-from src.crud.products import products
+from src.crud.products import ProductCrud
 from src.db import models
 from src.schemas.item import ItemIn
 
@@ -13,7 +13,7 @@ class CartCrud(Retrievable):
     @classmethod
     async def add_item(cls, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
         cart = await cls.get_one(user_id, db)
-        if cart and await products.get_one(item.product_id, db):
+        if cart and await ProductCrud.get_one(item.product_id, db):
             cart.add_item(**item.model_dump())
             await db.commit()
             await db.refresh(cart)
