@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-from typing import Callable
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,13 +50,15 @@ app.include_router(reviews.router)
 app.include_router(addresses.router)
 
 
-def create_exception_handler(status_code, initial_detail) -> Callable[[Request, ECommerceApiError], JSONResponse]:
-    async def exception_handler(_: Request, exc: ECommerceApiError) -> JSONResponse:
+def create_exception_handler(status_code, initial_detail):
+    async def exception_handler(_: Request, exception: ECommerceApiError) -> JSONResponse:
         content = {"detail": initial_detail}
-        if exc.message:
-            content["detail"] = exc.message
-        return JSONResponse(status_code=status_code, content=content, headers=exc.headers)
+        if exception.message:
+            content["detail"] = exception.message
+        return JSONResponse(status_code=status_code, content=content, headers=exception.headers)
+
     return exception_handler
+
 
 exception_handlers = [
     (ResourceDoesNotExistError, status.HTTP_404_NOT_FOUND, "Resource not found"),
@@ -69,8 +70,8 @@ exception_handlers = [
     (InvalidSignatureError, status.HTTP_401_UNAUTHORIZED, "Invalid signature")
 ]
 
-for exc_class, status_code, message in exception_handlers:
+for exc, code, message in exception_handlers:
     app.add_exception_handler(
-        exc_class_or_status_code=exc_class,
-        handler=create_exception_handler(status_code, message)
+        exc_class_or_status_code=exc,
+        handler=create_exception_handler(code, message)
     )
