@@ -37,12 +37,8 @@ class Creatable(_CRUDBase):
 
 class Retrievable(_CRUDBase):
     @classmethod
-    async def get_one(cls, key, db: AsyncSession):
+    async def get(cls, key, db: AsyncSession):
         return await cls._get_one(cls.key == key, db)
-
-    @classmethod
-    async def get_all(cls, key, db: AsyncSession):
-        return await cls._get_all(cls.key == key, db)
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -15,10 +15,10 @@ class OrderCRUD(Creatable, Retrievable):
 
     @classmethod
     async def update_status(cls, order_id: int, new_status: OrderStatus, db: AsyncSession):
-        order = await cls.get_one(order_id, db)
+        order = await cls.get(order_id, db)
         order.status = new_status
 
     @classmethod
     async def pay_order(cls, order_id: int, db: AsyncSession):
-        order = await cls.get_one(order_id, db)
+        order = await cls.get(order_id, db)
         order.is_paid = True

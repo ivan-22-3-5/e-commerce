@@ -10,6 +10,6 @@ class CategoryCRUD(Creatable, Retrievable, Deletable):
 
     @classmethod
     async def add_product(cls, category_name: str, product: models.Product, db: AsyncSession):
-        category = await cls.get_one(category_name, db)
+        category = await cls.get(category_name, db)
         if category:
             category.products.append(product)

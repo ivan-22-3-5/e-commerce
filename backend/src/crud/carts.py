@@ -12,8 +12,8 @@ class CartCRUD(Creatable, Retrievable):
 
     @classmethod
     async def add_item(cls, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
-        cart = await cls.get_one(user_id, db)
-        if cart and await ProductCRUD.get_one(item.product_id, db):
+        cart = await cls.get(user_id, db)
+        if cart and await ProductCRUD.get(item.product_id, db):
             cart.add_item(**item.model_dump())
             await db.commit()
             await db.refresh(cart)
@@ -21,7 +21,7 @@ class CartCRUD(Creatable, Retrievable):
 
     @classmethod
     async def remove_item(cls, user_id: int, item: ItemIn, db: AsyncSession) -> models.Cart | None:
-        cart = await cls.get_one(user_id, db)
+        cart = await cls.get(user_id, db)
         if cart:
             cart.remove_item(**item.model_dump())
             await db.commit()
@@ -30,7 +30,7 @@ class CartCRUD(Creatable, Retrievable):
 
     @classmethod
     async def clear(cls, user_id: int, db: AsyncSession) -> models.Cart | None:
-        cart = await cls.get_one(user_id, db)
+        cart = await cls.get(user_id, db)
         if cart:
             cart.clear()
             await db.commit()
