@@ -1,13 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable, Deletable, Updatable, Creatable, AbstractCRUD
+from src.crud.base import Retrievable, Deletable, Updatable, Creatable
 from src.db import models
-from src.db.models import TokenBase
 
 
-class TokenCRUD(AbstractCRUD, Creatable, Retrievable, Deletable, Updatable):
+class TokenCRUD(Creatable, Retrievable, Deletable, Updatable):
+    model = models.TokenBase
+    key = models.TokenBase.user_id
+
     @classmethod
-    async def upsert(cls, token: TokenBase, db: AsyncSession):
+    async def upsert(cls, token: models.TokenBase, db: AsyncSession):
         if await cls.get(token.user_id, db=db):
             await cls.update(token.user_id, token, db=db)
         else:

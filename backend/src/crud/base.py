@@ -20,11 +20,6 @@ class _CRUDBase:
         return result.scalars().all()
 
 
-class AbstractCRUD(_CRUDBase):
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-
-
 class Creatable(_CRUDBase):
     @classmethod
     async def create(cls, obj, db: AsyncSession):
