@@ -6,10 +6,10 @@ from src.db.models import TokenBase
 
 
 class TokenCRUD(AbstractCRUD, Creatable, Retrievable, Deletable, Updatable):
-    @staticmethod
+    @classmethod
     async def upsert(cls, token: TokenBase, db: AsyncSession):
         if await cls.get(token.user_id, db=db):
-            await cls.update(token, db=db)
+            await cls.update(token.user_id, token, db=db)
         else:
             await cls.create(token, db=db)
 
