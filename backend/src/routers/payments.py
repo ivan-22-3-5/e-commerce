@@ -2,13 +2,13 @@ import stripe
 from fastapi import APIRouter, status, Request
 
 from src.config import settings
-from src.crud import orders, payments
+from src.crud import OrderCRUD, PaymentCRUD
+from src.db.models import Payment
 from src.deps import db_dependency
 from src.custom_exceptions import (
     InvalidPayloadError,
     InvalidSignatureError
 )
-from src.schemas.payment import PaymentIn
 
 router = APIRouter(
     prefix='/stripe',
@@ -43,17 +43,15 @@ async def handle_payment_succeeded(event, db):
     intent = event.data.object
     metadata = intent['metadata']
     if order_id := metadata.get('order_id'):
-        await orders.pay_order(int(order_id), db=db)
-        await payments.create(
-            PaymentIn(
-                user_id=int(metadata.get('user_id')),
-                order_id=int(order_id),
-                amount=float(intent['amount']) / 100,
-                currency=intent['currency'],
-                payment_method=intent['payment_method'],
-                intent_id=intent['id']
-            ), db
-        )
+        await OrderCRUD.pay_order(int(order_id), db=db)
+        await PaymentCRUD.create(Payment(
+            user_id=int(metadata.get('user_id')),
+            order_id=int(order_id),
+            amount=float(intent['amount']) / 100,
+            currency=intent['currency'],
+            payment_method=intent['payment_method'],
+            intent_id=intent['id']
+        ), db)
 
 
 async def handle_payment_failed(event):
