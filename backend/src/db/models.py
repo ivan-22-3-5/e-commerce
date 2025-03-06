@@ -75,7 +75,7 @@ class ItemBase(Base):
 
 class CartItem(ItemBase):
     __tablename__ = 'cart_items'
-    cart_id: Mapped[int] = mapped_column(Integer, ForeignKey('carts.id'), primary_key=True)
+    cart_id: Mapped[int] = mapped_column(Integer, ForeignKey('carts.user_id'), primary_key=True)
 
 
 class Cart(Base):
