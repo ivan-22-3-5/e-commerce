@@ -26,6 +26,7 @@ class Creatable(_CRUDBase):
         try:
             db.add(obj)
             await db.flush()
+            return obj
         except IntegrityError as e:
             print(e)
 
