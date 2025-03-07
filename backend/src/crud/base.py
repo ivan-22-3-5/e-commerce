@@ -23,6 +23,11 @@ class _CRUDBase:
         result = await db.execute(select(cls.model).filter(criteria))
         return result.scalars().all()
 
+    def __init_subclass__(cls, **kwargs):
+        if cls.__base__ is not _CRUDBase:
+            if cls.model is None or cls.key is None:
+                raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
+
 
 class Creatable(_CRUDBase):
     @classmethod
@@ -34,11 +39,6 @@ class Creatable(_CRUDBase):
         except IntegrityError as e:
             print(e)
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if cls.model is None:
-            raise TypeError(f"Class {cls.__name__} must define 'model' class attribute.")
-
 
 class Retrievable(_CRUDBase):
     @classmethod
@@ -47,11 +47,6 @@ class Retrievable(_CRUDBase):
         if (entity := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
             raise ResourceDoesNotExistError(cls.not_found_message or f"Entity with key {key} not found.")
         return entity
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if cls.model is None or cls.key is None:
-            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
 
 
 class Updatable(_CRUDBase):
@@ -64,11 +59,6 @@ class Updatable(_CRUDBase):
             for k, v in obj_update.model_dump(exclude_none=True).items():
                 setattr(entity_to_update, k, v)
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if cls.model is None or cls.key is None:
-            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
-
 
 class Deletable(_CRUDBase):
     @classmethod
@@ -78,8 +68,3 @@ class Deletable(_CRUDBase):
             raise ResourceDoesNotExistError(cls.not_found_message or f"Entity with key {key} not found.")
         if entity_to_delete:
             await db.delete(entity_to_delete)
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if cls.model is None or cls.key is None:
-            raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
