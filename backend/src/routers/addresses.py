@@ -25,19 +25,21 @@ async def create_address(user: cur_user_dependency, address: AddressIn, db: db_d
 
 @router.patch('/{address_id}', status_code=status.HTTP_200_OK, response_model=Message)
 async def update_address(address_id: int, address_update: AddressUpdate, user: cur_user_dependency, db: db_dependency):
-    if (address := await AddressCRUD.get(address_id, db)) is None:
-        raise ResourceDoesNotExistError("Address with the given id does not exist")
-    if address.user_id != user.id:
-        raise NotEnoughRightsError("User is not the address owner")
-    await AddressCRUD.update(address_id, address_update, db)
+    def predicate(address: Address):
+        if address.user_id != user.id:
+            raise NotEnoughRightsError("User is not the address owner")
+        return True
+
+    await AddressCRUD.update(address_id, address_update, db, predicate=predicate)
     return Message(message="The address updated")
 
 
 @router.delete('/{address_id}', status_code=status.HTTP_200_OK, response_model=Message)
 async def delete_address(address_id: int, user: cur_user_dependency, db: db_dependency):
-    if (address := await AddressCRUD.get(address_id, db)) is None:
-        raise ResourceDoesNotExistError("Address with the given id does not exist")
-    if address.user_id != user.id:
-        raise NotEnoughRightsError("User is not the address owner")
-    await AddressCRUD.delete(address_id, db)
+    def predicate(address: Address):
+        if address.user_id != user.id:
+            raise NotEnoughRightsError("User is not the address owner")
+        return True
+
+    await AddressCRUD.delete(address_id, db, predicate=predicate)
     return Message(message="The address deleted")

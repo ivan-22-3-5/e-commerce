@@ -2,7 +2,6 @@ from fastapi import APIRouter, status
 
 from src.constraints import admin_path
 from src.crud import ProductCRUD
-from src.custom_exceptions import ResourceDoesNotExistError
 from src.db.models import Product
 from src.deps import db_dependency, cur_user_dependency
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
@@ -47,6 +46,5 @@ async def get_active_products(db: db_dependency):
 
 @router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
 async def get_product_reviews(product_id: int, db: db_dependency):
-    if (product := await ProductCRUD.get(product_id, db)) is None:
-        raise ResourceDoesNotExistError("Product with the given id does not exist")
+    product = await ProductCRUD.get(product_id, db)
     return product.reviews

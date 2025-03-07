@@ -48,7 +48,7 @@ async def refresh(req: Request, res: Response, db: db_dependency):
     if not token:
         raise InvalidTokenError("No token found")
     user_id = get_user_id_from_jwt(token)
-    db_token = await RefreshTokenCRUD.get(user_id, db)
+    db_token = await RefreshTokenCRUD.get(user_id, db, on_not_found='return-none')
     if not (db_token and db_token.token == token):
         raise InvalidTokenError("Invalid refresh token")
     access_token = create_jwt_token(user_id=user_id,
@@ -82,7 +82,7 @@ async def recover_password(email: EmailStr, db: db_dependency):
 @router.post('/reset-password', status_code=status.HTTP_200_OK, response_model=Message)
 async def reset_password(new_password: NewPasswordIn, db: db_dependency):
     user_id = get_user_id_from_jwt(new_password.token)
-    db_token = await RecoveryTokenCRUD.get(user_id, db)
+    db_token = await RecoveryTokenCRUD.get(user_id, db, on_not_found='return-none')
     if not (db_token and db_token.token == new_password.token):
         raise InvalidTokenError("Invalid recovery token")
     await UserCRUD.update_password(user_id, new_password.password, db)

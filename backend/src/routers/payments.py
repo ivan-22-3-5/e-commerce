@@ -43,7 +43,8 @@ async def handle_payment_succeeded(event, db):
     intent = event.data.object
     metadata = intent['metadata']
     if order_id := metadata.get('order_id'):
-        await OrderCRUD.pay_order(int(order_id), db=db)
+        order = await OrderCRUD.get(int(order_id), db)
+        order.is_paid = True
         await PaymentCRUD.create(Payment(
             user_id=int(metadata.get('user_id')),
             order_id=int(order_id),
