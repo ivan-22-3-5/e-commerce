@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Callable, Any
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -52,10 +52,11 @@ class Retrievable(_CRUDBase):
 class Updatable(_CRUDBase):
     @classmethod
     async def update(cls, key, obj_update: ObjUpdate, db: AsyncSession, *,
+                     predicate: Callable[[Any], bool] = None,
                      on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
         if (entity_to_update := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
             raise ResourceDoesNotExistError(cls.not_found_message or f"Entity with key {key} not found.")
-        if entity_to_update:
+        if entity_to_update and predicate is None or predicate(entity_to_update):
             for k, v in obj_update.model_dump(exclude_none=True).items():
                 setattr(entity_to_update, k, v)
 
@@ -63,8 +64,9 @@ class Updatable(_CRUDBase):
 class Deletable(_CRUDBase):
     @classmethod
     async def delete(cls, key, db: AsyncSession, *,
+                     predicate: Callable[[Any], bool] = None,
                      on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
         if (entity_to_delete := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
             raise ResourceDoesNotExistError(cls.not_found_message or f"Entity with key {key} not found.")
-        if entity_to_delete:
+        if entity_to_delete and predicate is None or predicate(entity_to_delete):
             await db.delete(entity_to_delete)
