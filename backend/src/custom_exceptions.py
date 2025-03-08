@@ -1,33 +1,33 @@
-class ECommerceApiError(Exception):
+class PetStoreApiError(Exception):
     def __init__(self, message: str = "Service is not available", headers=None):
         self.message = message
         self.headers = headers
         super().__init__(self.message)
 
 
-class ResourceDoesNotExistError(ECommerceApiError):
+class ResourceDoesNotExistError(PetStoreApiError):
     pass
 
 
-class ResourceAlreadyExistsError(ECommerceApiError):
+class ResourceAlreadyExistsError(PetStoreApiError):
     pass
 
 
-class NotEnoughRightsError(ECommerceApiError):
+class NotEnoughRightsError(PetStoreApiError):
     pass
 
 
-class InvalidTokenError(ECommerceApiError):
+class InvalidTokenError(PetStoreApiError):
     pass
 
 
-class InvalidCredentialsError(ECommerceApiError):
+class InvalidCredentialsError(PetStoreApiError):
     pass
 
 
-class InvalidPayloadError(ECommerceApiError):
+class InvalidPayloadError(PetStoreApiError):
     pass
 
 
-class InvalidSignatureError(ECommerceApiError):
+class InvalidSignatureError(PetStoreApiError):
     pass

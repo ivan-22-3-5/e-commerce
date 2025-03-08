@@ -9,7 +9,7 @@ from src.db import models
 from src.db.db import engine
 from src.routers import auth, users, orders, products, categories, reviews, addresses
 from src.custom_exceptions import (
-    ECommerceApiError,
+    PetStoreApiError,
     ResourceDoesNotExistError,
     ResourceAlreadyExistsError,
     NotEnoughRightsError,
@@ -51,7 +51,7 @@ app.include_router(addresses.router)
 
 
 def create_exception_handler(status_code, initial_detail):
-    async def exception_handler(_: Request, exception: ECommerceApiError) -> JSONResponse:
+    async def exception_handler(_: Request, exception: PetStoreApiError) -> JSONResponse:
         content = {"detail": initial_detail}
         if exception.message:
             content["detail"] = exception.message
