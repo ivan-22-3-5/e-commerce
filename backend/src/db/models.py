@@ -78,6 +78,7 @@ class CartItem(ItemBase):
     cart_id: Mapped[int] = mapped_column(ForeignKey('carts.user_id'), primary_key=True)
 
 
+# TODO: remove model, move and refactor logic associated with it
 class Cart(Base):
     __tablename__ = 'carts'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)

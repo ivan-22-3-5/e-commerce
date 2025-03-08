@@ -3,6 +3,7 @@ from functools import wraps
 from src.custom_exceptions import NotEnoughRightsError
 
 
+# TODO: remove decorator, rewrite permission system as fast api based dependencies
 def admin_path(f):
     @wraps(f)
     async def wrapper(user, *args, **kwargs):
@@ -21,4 +22,3 @@ def confirmed_email_required(f):
         return await f(user, *args, **kwargs)
 
     return wrapper
-

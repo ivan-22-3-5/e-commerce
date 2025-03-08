@@ -15,8 +15,6 @@ class CartCRUD(Creatable, Retrievable):
         cart = await cls.get(user_id, db)
         if cart and await ProductCRUD.get(item.product_id, db):
             cart.add_item(**item.model_dump())
-            await db.commit()
-            await db.refresh(cart)
             return cart
 
     @classmethod
@@ -24,8 +22,6 @@ class CartCRUD(Creatable, Retrievable):
         cart = await cls.get(user_id, db)
         if cart:
             cart.remove_item(**item.model_dump())
-            await db.commit()
-            await db.refresh(cart)
             return cart
 
     @classmethod
@@ -33,6 +29,4 @@ class CartCRUD(Creatable, Retrievable):
         cart = await cls.get(user_id, db)
         if cart:
             cart.clear()
-            await db.commit()
-            await db.refresh(cart)
             return cart
