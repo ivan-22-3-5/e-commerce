@@ -5,20 +5,19 @@ from pydantic import BaseModel, Field
 from src.schemas.base import ObjUpdate
 
 
-class ProductBase(BaseModel):
+class ProductIn(BaseModel):
     title: str = Field(max_length=32)
     description: str = Field(max_length=256)
     full_price: float = Field(ge=0)
 
 
-class ProductIn(ProductBase):
-    pass
-
-
-class ProductOut(ProductBase):
+class ProductOut(BaseModel):
     id: int
     rating: float
     final_price: float
+    title: str
+    description: str
+    full_price: float
 
 
 class ProductUpdate(ObjUpdate):

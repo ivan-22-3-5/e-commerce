@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from src.schemas.base import ObjUpdate
 
 
-class AddressBase(BaseModel):
+class AddressIn(BaseModel):
     fullname: str = Field(max_length=32)
     country: str = Field(max_length=32)
     city: str = Field(max_length=64)
@@ -13,12 +13,13 @@ class AddressBase(BaseModel):
     zipcode: str = Field(max_length=10)
 
 
-class AddressIn(AddressBase):
-    pass
-
-
-class AddressOut(AddressBase):
+class AddressOut(BaseModel):
     id: int
+    fullname: str
+    country: str
+    city: str
+    street: str
+    zipcode: str
 
 
 class AddressUpdate(ObjUpdate):

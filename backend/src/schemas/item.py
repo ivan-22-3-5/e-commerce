@@ -1,14 +1,12 @@
 from pydantic import BaseModel, Field
 
 
-class ItemBase(BaseModel):
+class ItemIn(BaseModel):
     product_id: int = Field(gt=0)
     quantity: int = Field(gt=0)
 
 
-class ItemIn(ItemBase):
-    pass
-
-
-class ItemOut(ItemBase):
+class ItemOut(BaseModel):
+    product_id: int
+    quantity: int
     total_price: float
