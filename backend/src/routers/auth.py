@@ -85,7 +85,9 @@ async def reset_password(new_password: NewPasswordIn, db: db_dependency):
     db_token = await RecoveryTokenCRUD.get(user_id, db, on_not_found='return-none')
     if not (db_token and db_token.token == new_password.token):
         raise InvalidTokenError("Invalid recovery token")
-    await UserCRUD.update_password(user_id, new_password.password, db)
+    user = await UserCRUD.get(user_id, db)
+    user.password = new_password
+
     await RecoveryTokenCRUD.delete(user_id, db)
     return Message(message="New password set")
 

@@ -45,7 +45,9 @@ async def confirm_email(token: Annotated[str, Body(embed=True)], db: db_dependen
     db_token = await ConfirmationTokenCRUD.get(user_id, db)
     if not (db_token and db_token.token == token):
         raise InvalidTokenError("Invalid confirmation token")
-    await UserCRUD.confirm_email(user_id, db)
+    user = await UserCRUD.get(user_id, db)
+    user.is_confirmed = True
+
     await ConfirmationTokenCRUD.delete(user_id, db)
     return Message(message="The user is confirmed")
 
