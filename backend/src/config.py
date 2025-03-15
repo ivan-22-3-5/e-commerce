@@ -21,9 +21,7 @@ class Settings(BaseSettings):
 
     POSTGRESQL_DB_URL: str
 
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:3000"
-    ]
+    CORS_ORIGINS: list[str]
 
     SAME_SITE_COOKIE: Literal['strict', 'lax', 'none']
 
