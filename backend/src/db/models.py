@@ -20,7 +20,7 @@ class User(Base):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str] = mapped_column(String(50))
+    password: Mapped[str] = mapped_column(String(72))
     username: Mapped[str] = mapped_column(String(30))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
