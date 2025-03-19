@@ -7,7 +7,7 @@ erDiagram
         float full_price
         int discount
         int quantity
-        bool enabled
+        bool is_active
         timestamp created_at
     }
 

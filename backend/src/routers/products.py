@@ -36,12 +36,12 @@ async def get_all_products(user: cur_user_dependency, db: db_dependency):
 @router.get('/inactive', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
 @admin_path
 async def get_inactive_products(user: cur_user_dependency, db: db_dependency):
-    return await ProductCRUD.get_all(db=db, enabled=False)
+    return await ProductCRUD.get_all(db=db, active=False)
 
 
 @router.get('', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
 async def get_active_products(db: db_dependency):
-    return await ProductCRUD.get_all(db=db, enabled=True)
+    return await ProductCRUD.get_all(db=db, active=True)
 
 
 @router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
