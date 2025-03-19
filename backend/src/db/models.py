@@ -142,6 +142,7 @@ class Product(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(String(1000))
+    quantity: Mapped[int]
     full_price: Mapped[float]
     discount: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
@@ -154,6 +155,7 @@ class Product(Base):
                                                         secondary=product_category_association)
     reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
 
+    # TODO: Optimize
     @hybrid_property
     def rating(self):
         return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1) if self.reviews else 0

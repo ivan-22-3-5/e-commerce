@@ -9,6 +9,7 @@ class ProductIn(BaseModel):
     title: str = Field(max_length=32)
     description: str = Field(max_length=256)
     full_price: float = Field(ge=0)
+    quantity: int = Field(gt=0, default=0)
 
 
 class ProductOut(BaseModel):
@@ -26,3 +27,4 @@ class ProductUpdate(ObjUpdate):
     full_price: Optional[float] = Field(default=None, ge=0)
     discount: Optional[float] = Field(default=None, ge=0, le=100)
     enabled: Optional[bool] = Field(default=None)
+    quantity: Optional[int] = Field(default=None, gt=0)
