@@ -12,3 +12,6 @@ class ReviewsCRUD(Creatable, Retrievable, Deletable):
     @classmethod
     async def get_by_user(cls, user_id: int, db: AsyncSession) -> list[models.Review]:
         return await cls._get_all(models.Review.user_id == user_id, db)
+
+    async def get_by_product(cls, product_id: int, db: AsyncSession) -> list[models.Review]:
+        return await cls._get_all(models.Review.product_id == product_id, db)
