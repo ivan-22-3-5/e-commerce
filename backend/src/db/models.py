@@ -27,8 +27,6 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    reviews: Mapped[list["Review"]] = relationship('Review')
-
 
 class Address(Base):
     __tablename__ = 'addresses'
