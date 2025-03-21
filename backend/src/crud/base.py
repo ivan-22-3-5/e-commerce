@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.custom_exceptions import ResourceDoesNotExistError
 from src.logger import logger
 from src.schemas.base import ObjUpdate
+from src.schemas.filtration import PaginationParams
 
 
 class _CRUDBase:
@@ -20,8 +21,9 @@ class _CRUDBase:
         return result.scalars().first()
 
     @classmethod
-    async def _get_all(cls, criteria, db: AsyncSession):
-        result = await db.execute(select(cls.model).filter(criteria))
+    async def _get_all(cls, criteria, db: AsyncSession, pagination: PaginationParams = None):
+        result = await db.execute(select(cls.model).filter(criteria)
+                                  .limit(pagination and pagination.limit).offset(pagination and pagination.offset))
         return result.scalars().all()
 
     def __init_subclass__(cls, **kwargs):

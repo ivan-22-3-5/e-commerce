@@ -1,9 +1,10 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from src.crud import ProductCRUD, ReviewsCRUD
 from src.db.models import Product
 from src.deps import SessionDep, CurrentUserDep
 from src.permissions import AdminRole
+from src.schemas.filtration import PaginationParams
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
 from src.schemas.review import ReviewOut
 
@@ -29,10 +30,11 @@ async def update_product(product_id: int, product_update: ProductUpdate, db: Ses
 
 @router.get('', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
 async def get_products(user: CurrentUserDep, db: SessionDep,
+                       pagination: PaginationParams = Depends(),
                        is_active: bool = None):
     if user.is_admin:
-        return await ProductCRUD.get_all(db=db, is_active=is_active)
-    return await ProductCRUD.get_all(db=db, is_active=True)
+        return await ProductCRUD.get_all(db=db, pagination=pagination, is_active=is_active)
+    return await ProductCRUD.get_all(db=db, pagination=pagination, is_active=True)
 
 
 @router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
