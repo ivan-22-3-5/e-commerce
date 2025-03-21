@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.custom_exceptions import ResourceDoesNotExistError
+from src.logger import logger
 from src.schemas.base import ObjUpdate
 
 
@@ -38,7 +39,8 @@ class Creatable(_CRUDBase):
             await db.refresh(obj)
             return obj
         except IntegrityError as e:
-            print(e)
+            # TODO: add robust error handling
+            logger.error(e)
 
 
 class Retrievable(_CRUDBase):
