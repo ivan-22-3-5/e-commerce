@@ -35,6 +35,7 @@ class Creatable(_CRUDBase):
         try:
             db.add(obj)
             await db.flush()
+            await db.refresh(obj)
             return obj
         except IntegrityError as e:
             print(e)
