@@ -5,8 +5,8 @@ from src.crud import AddressCRUD
 from src.db.models import Address
 from src.schemas.address import AddressOut, AddressIn, AddressUpdate
 from src.schemas.message import Message
-from src.deps import cur_user_dependency, db_dependency
-from src.custom_exceptions import ResourceDoesNotExistError, NotEnoughRightsError
+from src.deps import CurrentUserDep, SessionDep
+from src.custom_exceptions import NotEnoughRightsError
 
 router = APIRouter(
     prefix='/addresses',
@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=AddressOut)
 @confirmed_email_required
-async def create_address(user: cur_user_dependency, address: AddressIn, db: db_dependency):
+async def create_address(user: CurrentUserDep, address: AddressIn, db: SessionDep):
     return await AddressCRUD.create(Address(
         **address.model_dump(),
         user_id=user.id
@@ -24,7 +24,7 @@ async def create_address(user: cur_user_dependency, address: AddressIn, db: db_d
 
 
 @router.patch('/{address_id}', status_code=status.HTTP_200_OK, response_model=Message)
-async def update_address(address_id: int, address_update: AddressUpdate, user: cur_user_dependency, db: db_dependency):
+async def update_address(address_id: int, address_update: AddressUpdate, user: CurrentUserDep, db: SessionDep):
     def predicate(address: Address):
         if address.user_id != user.id:
             raise NotEnoughRightsError("User is not the address owner")
@@ -35,7 +35,7 @@ async def update_address(address_id: int, address_update: AddressUpdate, user: c
 
 
 @router.delete('/{address_id}', status_code=status.HTTP_200_OK, response_model=Message)
-async def delete_address(address_id: int, user: cur_user_dependency, db: db_dependency):
+async def delete_address(address_id: int, user: CurrentUserDep, db: SessionDep):
     def predicate(address: Address):
         if address.user_id != user.id:
             raise NotEnoughRightsError("User is not the address owner")

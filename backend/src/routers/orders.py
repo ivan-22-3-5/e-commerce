@@ -7,7 +7,7 @@ from src.db.models import Order
 from src.schemas.client_secret import ClientSecret
 from src.schemas.message import Message
 from src.schemas.order import OrderIn
-from src.deps import cur_user_dependency, db_dependency
+from src.deps import CurrentUserDep, SessionDep
 from src.custom_exceptions import (
     ResourceDoesNotExistError,
     NotEnoughRightsError,
@@ -22,7 +22,7 @@ router = APIRouter(
 
 @confirmed_email_required
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=ClientSecret)
-async def create_order(user: cur_user_dependency, order: OrderIn, db: db_dependency):
+async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
     address = await AddressCRUD.get(order.address_id, db)
     if address.user_id != user.id:
         raise NotEnoughRightsError("Address does not belong to the user")
@@ -40,7 +40,7 @@ async def create_order(user: cur_user_dependency, order: OrderIn, db: db_depende
 
 
 @router.post('/{order_id}/cancel', status_code=status.HTTP_200_OK, response_model=Message)
-async def cancel_order(order_id: int, user: cur_user_dependency, db: db_dependency):
+async def cancel_order(order_id: int, user: CurrentUserDep, db: SessionDep):
     order = await OrderCRUD.get(order_id, db)
     if order.user_id != user.id:
         raise NotEnoughRightsError("User is not the order owner")
@@ -50,7 +50,7 @@ async def cancel_order(order_id: int, user: cur_user_dependency, db: db_dependen
 
 @router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message)
 @admin_path
-async def change_order_status(user: cur_user_dependency, order_id: int, new_status: OrderStatus, db: db_dependency):
+async def change_order_status(user: CurrentUserDep, order_id: int, new_status: OrderStatus, db: SessionDep):
     order = await OrderCRUD.get(order_id, db)
     order.status = new_status
     return Message(message=f"The order status updated to {new_status.value}")

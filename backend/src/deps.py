@@ -11,13 +11,13 @@ from src.utils import get_user_id_from_jwt
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-token_dependency = Annotated[str, Depends(oauth2_schema)]
+TokenDep = Annotated[str, Depends(oauth2_schema)]
 
-db_dependency = Annotated[AsyncSession, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 
-async def get_current_user(token: token_dependency, db: db_dependency):
+async def get_current_user(token: TokenDep, db: SessionDep):
     return await UserCRUD.get(get_user_id_from_jwt(token), db)
 
 
-cur_user_dependency = Annotated[models.User, Depends(get_current_user)]
+CurrentUserDep = Annotated[models.User, Depends(get_current_user)]

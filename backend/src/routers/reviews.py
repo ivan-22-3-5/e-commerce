@@ -4,7 +4,7 @@ from src.constraints import confirmed_email_required
 from src.crud import ReviewsCRUD, ProductCRUD
 from src.custom_exceptions import NotEnoughRightsError
 from src.db.models import Review
-from src.deps import cur_user_dependency, db_dependency
+from src.deps import CurrentUserDep, SessionDep
 from src.schemas.message import Message
 from src.schemas.review import ReviewIn
 
@@ -16,7 +16,7 @@ router = APIRouter(
 
 @confirmed_email_required
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
-async def create_review(user: cur_user_dependency, product_id: int, review: ReviewIn, db: db_dependency):
+async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
     product = await ProductCRUD.get(product_id, db)
     await ReviewsCRUD.create(Review(
         product_id=product.id,
@@ -27,7 +27,7 @@ async def create_review(user: cur_user_dependency, product_id: int, review: Revi
 
 
 @router.delete('/{review_id}', status_code=status.HTTP_200_OK, response_model=Message)
-async def delete_review(review_id: int, user: cur_user_dependency, db: db_dependency):
+async def delete_review(review_id: int, user: CurrentUserDep, db: SessionDep):
     def predicate(review: Review):
         if review.user_id != user.id:
             raise NotEnoughRightsError("Only the owner can delete the review")

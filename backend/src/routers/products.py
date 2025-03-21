@@ -3,7 +3,7 @@ from fastapi import APIRouter, status
 from src.constraints import admin_path
 from src.crud import ProductCRUD, ReviewsCRUD
 from src.db.models import Product
-from src.deps import db_dependency, cur_user_dependency
+from src.deps import SessionDep, CurrentUserDep
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
 from src.schemas.review import ReviewOut
 
@@ -15,7 +15,7 @@ router = APIRouter(
 
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=ProductOut)
 @admin_path
-async def create_product(user: cur_user_dependency, product: ProductIn, db: db_dependency):
+async def create_product(user: CurrentUserDep, product: ProductIn, db: SessionDep):
     return await ProductCRUD.create(Product(
         **product.model_dump()
     ), db)
@@ -23,12 +23,12 @@ async def create_product(user: cur_user_dependency, product: ProductIn, db: db_d
 
 @router.patch('/{product_id}', status_code=status.HTTP_200_OK, response_model=ProductOut)
 @admin_path
-async def update_product(user: cur_user_dependency, product_id: int, product_update: ProductUpdate, db: db_dependency):
+async def update_product(user: CurrentUserDep, product_id: int, product_update: ProductUpdate, db: SessionDep):
     return await ProductCRUD.update(product_id, product_update, db)
 
 
 @router.get('', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
-async def get_products(user: cur_user_dependency, db: db_dependency,
+async def get_products(user: CurrentUserDep, db: SessionDep,
                        is_active: bool = None):
     if user.is_admin:
         return await ProductCRUD.get_all(db=db, is_active=is_active)
@@ -36,5 +36,5 @@ async def get_products(user: cur_user_dependency, db: db_dependency,
 
 
 @router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
-async def get_product_reviews(product_id: int, db: db_dependency):
+async def get_product_reviews(product_id: int, db: SessionDep):
     return await ReviewsCRUD.get_by_product(product_id, db)

@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, Request
 from src.config import settings
 from src.crud import OrderCRUD, PaymentCRUD
 from src.db.models import Payment
-from src.deps import db_dependency
+from src.deps import SessionDep
 from src.custom_exceptions import (
     InvalidPayloadError,
     InvalidSignatureError
@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 @router.post('/webhook', status_code=status.HTTP_200_OK)
-async def webhook(req: Request, db: db_dependency):
+async def webhook(req: Request, db: SessionDep):
     payload = await req.body()
     sig_header = req.headers.get('stripe-signature')
     try:

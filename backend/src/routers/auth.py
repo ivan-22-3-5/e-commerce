@@ -13,7 +13,7 @@ from src.schemas.token import Token
 from src.schemas.message import Message
 from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD, UserCRUD
 from src.config import settings
-from src.deps import token_dependency, db_dependency
+from src.deps import TokenDep, SessionDep
 from src.utils import create_jwt_token, get_user_id_from_jwt, verify_password
 
 router = APIRouter(
@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.post('/token', status_code=status.HTTP_200_OK, response_model=Token)
-async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency,
+async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDep,
                 response: Response):
     user = await UserCRUD.get_by_email(user_credentials.username, db)
     if not (user and verify_password(user_credentials.password, user.password)):
@@ -43,7 +43,7 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
 
 
 @router.post('/refresh', status_code=status.HTTP_200_OK, response_model=Token)
-async def refresh(req: Request, res: Response, db: db_dependency):
+async def refresh(req: Request, res: Response, db: SessionDep):
     token = req.cookies.get('refresh_token')
     if not token:
         raise InvalidTokenError("No token found")
@@ -66,7 +66,7 @@ async def refresh(req: Request, res: Response, db: db_dependency):
 
 
 @router.post('/password-recovery/{email}', status_code=status.HTTP_200_OK, response_model=Message)
-async def recover_password(email: EmailStr, db: db_dependency):
+async def recover_password(email: EmailStr, db: SessionDep):
     if (user := await UserCRUD.get_by_email(email, db)) is None:
         raise ResourceDoesNotExistError("The given email is not registered yet")
     recovery_token = create_jwt_token(user_id=user.id,
@@ -80,7 +80,7 @@ async def recover_password(email: EmailStr, db: db_dependency):
 
 
 @router.post('/reset-password', status_code=status.HTTP_200_OK, response_model=Message)
-async def reset_password(new_password: NewPasswordIn, db: db_dependency):
+async def reset_password(new_password: NewPasswordIn, db: SessionDep):
     user_id = get_user_id_from_jwt(new_password.token)
     db_token = await RecoveryTokenCRUD.get(user_id, db, on_not_found='return-none')
     if not (db_token and db_token.token == new_password.token):
@@ -93,7 +93,7 @@ async def reset_password(new_password: NewPasswordIn, db: db_dependency):
 
 
 @router.post('/logout', status_code=status.HTTP_200_OK, response_model=Message)
-async def refresh(token: token_dependency, res: Response, db: db_dependency):
+async def refresh(token: TokenDep, res: Response, db: SessionDep):
     user_id = get_user_id_from_jwt(token)
     await RefreshTokenCRUD.delete(user_id, db=db)
     res.delete_cookie('refresh_token')
