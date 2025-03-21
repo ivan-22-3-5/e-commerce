@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status
 
-from src.constraints import admin_path
 from src.crud import ProductCRUD, ReviewsCRUD
 from src.db.models import Product
 from src.deps import SessionDep, CurrentUserDep
+from src.permissions import AdminRole
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
 from src.schemas.review import ReviewOut
 
@@ -13,17 +13,17 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=ProductOut)
-@admin_path
-async def create_product(user: CurrentUserDep, product: ProductIn, db: SessionDep):
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=ProductOut,
+             dependencies=[AdminRole])
+async def create_product(product: ProductIn, db: SessionDep):
     return await ProductCRUD.create(Product(
         **product.model_dump()
     ), db)
 
 
-@router.patch('/{product_id}', status_code=status.HTTP_200_OK, response_model=ProductOut)
-@admin_path
-async def update_product(user: CurrentUserDep, product_id: int, product_update: ProductUpdate, db: SessionDep):
+@router.patch('/{product_id}', status_code=status.HTTP_200_OK, response_model=ProductOut,
+              dependencies=[AdminRole])
+async def update_product(product_id: int, product_update: ProductUpdate, db: SessionDep):
     return await ProductCRUD.update(product_id, product_update, db)
 
 

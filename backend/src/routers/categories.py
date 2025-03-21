@@ -1,11 +1,11 @@
 from fastapi import APIRouter, status
 
-from src.constraints import admin_path
 from src.crud import CategoryCRUD, ProductCRUD
 from src.db.models import Category
+from src.permissions import AdminRole
 from src.schemas.category import CategoryIn
 from src.schemas.message import Message
-from src.deps import CurrentUserDep, SessionDep
+from src.deps import SessionDep
 from src.custom_exceptions import ResourceAlreadyExistsError, ResourceDoesNotExistError
 from src.schemas.product import ProductOut
 
@@ -15,25 +15,25 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
-@admin_path
-async def create_category(user: CurrentUserDep, category: CategoryIn, db: SessionDep):
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message,
+             dependencies=[AdminRole])
+async def create_category(category: CategoryIn, db: SessionDep):
     if await CategoryCRUD.get(category.name, db):
         raise ResourceAlreadyExistsError("Category with the given name already exists")
     await CategoryCRUD.create(Category(**category.model_dump()), db=db)
     return Message(message=f"Category {category.name} has been successfully created")
 
 
-@router.delete('/{category_name}', status_code=status.HTTP_200_OK, response_model=Message)
-@admin_path
-async def delete_category(user: CurrentUserDep, category_name: str, db: SessionDep):
+@router.delete('/{category_name}', status_code=status.HTTP_200_OK, response_model=Message,
+               dependencies=[AdminRole])
+async def delete_category(category_name: str, db: SessionDep):
     await CategoryCRUD.delete(category_name, db)
     return Message(message=f"Category {category_name} has been successfully deleted")
 
 
-@router.post('/{category_name}/products/{product_id}', status_code=status.HTTP_200_OK, response_model=Message)
-@admin_path
-async def link_category_to_product(user: CurrentUserDep, category_name: str, product_id: int, db: SessionDep):
+@router.post('/{category_name}/products/{product_id}', status_code=status.HTTP_200_OK, response_model=Message,
+             dependencies=[AdminRole])
+async def link_category_to_product(category_name: str, product_id: int, db: SessionDep):
     if (category := await CategoryCRUD.get(category_name, db)) is None:
         raise ResourceDoesNotExistError("Category with the given name does not exist")
     if (product := await ProductCRUD.get(product_id, db)) is None:

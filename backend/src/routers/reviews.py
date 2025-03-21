@@ -1,10 +1,10 @@
 from fastapi import APIRouter, status
 
-from src.constraints import confirmed_email_required
 from src.crud import ReviewsCRUD, ProductCRUD
 from src.custom_exceptions import NotEnoughRightsError
 from src.db.models import Review
 from src.deps import CurrentUserDep, SessionDep
+from src.permissions import ConfirmedEmail
 from src.schemas.message import Message
 from src.schemas.review import ReviewIn
 
@@ -14,8 +14,8 @@ router = APIRouter(
 )
 
 
-@confirmed_email_required
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message,
+             dependencies=[ConfirmedEmail])
 async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
     product = await ProductCRUD.get(product_id, db)
     await ReviewsCRUD.create(Review(

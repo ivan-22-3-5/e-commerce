@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status
 
-from src.constraints import admin_path, confirmed_email_required
 from src.crud import OrderCRUD, ProductCRUD, AddressCRUD
 from src.custom_types import OrderStatus
 from src.db.models import Order
+from src.permissions import ConfirmedEmail, AdminRole
 from src.schemas.client_secret import ClientSecret
 from src.schemas.message import Message
 from src.schemas.order import OrderIn
@@ -20,8 +20,8 @@ router = APIRouter(
 )
 
 
-@confirmed_email_required
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=ClientSecret)
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=ClientSecret,
+             dependencies=[ConfirmedEmail])
 async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
     address = await AddressCRUD.get(order.address_id, db)
     if address.user_id != user.id:
@@ -48,9 +48,9 @@ async def cancel_order(order_id: int, user: CurrentUserDep, db: SessionDep):
     return Message(message="The order cancelled")
 
 
-@router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message)
-@admin_path
-async def change_order_status(user: CurrentUserDep, order_id: int, new_status: OrderStatus, db: SessionDep):
+@router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message,
+              dependencies=[AdminRole])
+async def change_order_status(order_id: int, new_status: OrderStatus, db: SessionDep):
     order = await OrderCRUD.get(order_id, db)
     order.status = new_status
     return Message(message=f"The order status updated to {new_status.value}")
