@@ -1,6 +1,6 @@
 from fastapi import Depends
 
-from deps import CurrentUserDep
+from src.deps import CurrentUserDep
 from src.custom_exceptions import NotEnoughRightsError
 
 
