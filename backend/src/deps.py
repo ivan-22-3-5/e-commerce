@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.crud.users import UserCRUD
 from src.db import models
 from src.db.db import get_db
+from src.file_storage import FileStorage, local_file_storage
 from src.utils import get_user_id_from_jwt
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -21,3 +22,5 @@ async def get_current_user(token: TokenDep, db: SessionDep):
 
 
 CurrentUserDep = Annotated[models.User, Depends(get_current_user)]
+
+FileStorageDep = Annotated[FileStorage, Depends(lambda: local_file_storage)]
