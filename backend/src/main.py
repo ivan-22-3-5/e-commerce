@@ -17,6 +17,8 @@ from src.custom_exceptions import (
     InvalidCredentialsError,
     InvalidPayloadError,
     InvalidSignatureError,
+    FileTooLargeError,
+    NotSupportedFileTypeError
 )
 
 
@@ -67,7 +69,9 @@ exception_handlers = [
     (InvalidTokenError, status.HTTP_401_UNAUTHORIZED, "Invalid token"),
     (InvalidCredentialsError, status.HTTP_401_UNAUTHORIZED, "Invalid credentials"),
     (InvalidPayloadError, status.HTTP_422_UNPROCESSABLE_ENTITY, "Invalid payload"),
-    (InvalidSignatureError, status.HTTP_401_UNAUTHORIZED, "Invalid signature")
+    (InvalidSignatureError, status.HTTP_401_UNAUTHORIZED, "Invalid signature"),
+    (FileTooLargeError, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large"),
+    (NotSupportedFileTypeError, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "File type is not allowed"),
 ]
 
 for exc, code, message in exception_handlers:

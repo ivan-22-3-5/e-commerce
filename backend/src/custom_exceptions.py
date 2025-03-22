@@ -31,3 +31,11 @@ class InvalidPayloadError(PetStoreApiError):
 
 class InvalidSignatureError(PetStoreApiError):
     pass
+
+
+class FileTooLargeError(PetStoreApiError):
+    pass
+
+
+class NotSupportedFileTypeError(PetStoreApiError):
+    pass
