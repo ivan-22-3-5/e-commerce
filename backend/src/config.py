@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     CONFIRMATION_TOKEN_EXPIRE_MINUTES: int
     ALGORITHM: str = "HS256"
 
+    FILE_SIZE_LIMIT: int = 10 * 1024 * 1024
+    SUPPORTED_IMAGE_TYPES: list[str] = ['image/jpeg', 'image/png']
+    FILES_DIR: str = 'product_images'
+
     STRIPE_SECRET_KEY: str
     STRIPE_WEBHOOK_SECRET: str
 
