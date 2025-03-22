@@ -11,6 +11,8 @@ services:
       - db
     ports:
       - "8000:8000"
+    volumes:
+      - petstore_images:/app/${IMAGES_PATH}
   redis:
     container_name: petstore_redis
     image: redis:latest
@@ -57,3 +59,4 @@ services:
 
 volumes:
   petstore_db_data:
+  petstore_images:
