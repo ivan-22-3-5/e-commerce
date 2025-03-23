@@ -10,6 +10,7 @@ class FileStorage(ABC):
         pass
 
 
+# TODO: make async using aiofiles
 class LocalFileStorage(FileStorage):
     def __init__(self, base_path: str = 'files'):
         self.base_path = base_path.strip('/')

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     SUPPORTED_IMAGE_TYPES: list[str] = ['image/jpeg', 'image/png']
     FILES_DIR: str = 'static/product_images'
     IMAGES_HOST: str = 'http://localhost:8000'
-    IMAGES_BASE_PATH: str = '/static/product_images'
+    IMAGES_BASE_PATH: str = '/static/product_images/'
     IMAGES_BASE_URL: str = IMAGES_HOST + IMAGES_BASE_PATH
 
     STRIPE_SECRET_KEY: str
