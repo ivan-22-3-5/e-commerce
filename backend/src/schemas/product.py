@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from src.schemas.base import ObjUpdate
+from src.schemas.image import ProductImageOut
 
 
 class ProductIn(BaseModel):
@@ -19,6 +20,8 @@ class ProductOut(BaseModel):
     title: str
     description: str
     full_price: float
+
+    images: list[ProductImageOut]
 
 
 class ProductUpdate(ObjUpdate):

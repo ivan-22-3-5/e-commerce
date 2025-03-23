@@ -155,10 +155,8 @@ class Product(Base):
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    categories: Mapped[list["Category"]] = relationship('Category',
-                                                        back_populates='products',
-                                                        lazy='selectin',
-                                                        secondary=product_category_association)
+    images: Mapped[list["ProductImage"]] = relationship('ProductImage', lazy='selectin')
+
     reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
 
     # TODO: Optimize
@@ -178,7 +176,6 @@ class Category(Base):
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
     products: Mapped[list["Product"]] = relationship('Product',
-                                                     back_populates='categories',
                                                      lazy="selectin",
                                                      secondary=product_category_association)
 
