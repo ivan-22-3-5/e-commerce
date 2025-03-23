@@ -1,6 +1,8 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -50,6 +52,10 @@ app.include_router(products.router)
 app.include_router(categories.router)
 app.include_router(reviews.router)
 app.include_router(addresses.router)
+
+os.makedirs(settings.FILES_DIR, exist_ok=True)
+
+app.mount(settings.FILES_DIR, StaticFiles(directory=settings.FILES_DIR), name="static")
 
 
 def create_exception_handler(status_code, initial_detail):
