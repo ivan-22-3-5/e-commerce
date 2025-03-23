@@ -155,7 +155,7 @@ class Product(Base):
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    images: Mapped[list["ProductImage"]] = relationship('ProductImage', lazy='selectin')
+    images: Mapped[list["ProductImage"]] = relationship('ProductImage', lazy='selectin', cascade="all, delete-orphan")
 
     reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
 
