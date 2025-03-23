@@ -20,7 +20,8 @@ from src.custom_exceptions import (
     InvalidPayloadError,
     InvalidSignatureError,
     FileTooLargeError,
-    NotSupportedFileTypeError
+    NotSupportedFileTypeError,
+    LimitExceededError
 )
 
 
@@ -55,7 +56,7 @@ app.include_router(addresses.router)
 
 os.makedirs(settings.FILES_DIR, exist_ok=True)
 
-app.mount(settings.FILES_DIR, StaticFiles(directory=settings.FILES_DIR), name="static")
+app.mount(settings.IMAGES_BASE_PATH, StaticFiles(directory=settings.FILES_DIR), name="static")
 
 
 def create_exception_handler(status_code, initial_detail):
@@ -78,6 +79,7 @@ exception_handlers = [
     (InvalidSignatureError, status.HTTP_401_UNAUTHORIZED, "Invalid signature"),
     (FileTooLargeError, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large"),
     (NotSupportedFileTypeError, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "File type is not allowed"),
+    (LimitExceededError, status.HTTP_409_CONFLICT, "Limit exceeded"),
 ]
 
 for exc, code, message in exception_handlers:

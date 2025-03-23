@@ -39,3 +39,7 @@ class FileTooLargeError(PetStoreApiError):
 
 class NotSupportedFileTypeError(PetStoreApiError):
     pass
+
+
+class LimitExceededError(PetStoreApiError):
+    pass

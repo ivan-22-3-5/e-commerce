@@ -13,10 +13,13 @@ class Settings(BaseSettings):
     CONFIRMATION_TOKEN_EXPIRE_MINUTES: int
     ALGORITHM: str = "HS256"
 
+    MAX_IMAGES_PER_PRODUCT: int = 10
     FILE_SIZE_LIMIT: int = 10 * 1024 * 1024
     SUPPORTED_IMAGE_TYPES: list[str] = ['image/jpeg', 'image/png']
     FILES_DIR: str = 'static/product_images'
-    IMAGES_BASE_URL: str = 'http://localhost:8000/static/product_images'
+    IMAGES_HOST: str = 'http://localhost:8000'
+    IMAGES_BASE_PATH: str = '/static/product_images'
+    IMAGES_BASE_URL: str = IMAGES_HOST + IMAGES_BASE_PATH
 
     STRIPE_SECRET_KEY: str
     STRIPE_WEBHOOK_SECRET: str
