@@ -15,7 +15,8 @@ class Settings(BaseSettings):
 
     FILE_SIZE_LIMIT: int = 10 * 1024 * 1024
     SUPPORTED_IMAGE_TYPES: list[str] = ['image/jpeg', 'image/png']
-    FILES_DIR: str = 'product_images'
+    FILES_DIR: str = 'static/product_images'
+    IMAGES_BASE_URL: str = 'http://localhost:8000/static/product_images'
 
     STRIPE_SECRET_KEY: str
     STRIPE_WEBHOOK_SECRET: str
