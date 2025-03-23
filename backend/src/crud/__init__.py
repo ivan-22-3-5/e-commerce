@@ -1,6 +1,6 @@
 from .categories import CategoryCRUD
 from .products import ProductCRUD
-from .reviews import ReviewsCRUD
+from .reviews import ReviewCRUD
 from .users import UserCRUD
 from .carts import CartCRUD
 from .addresses import AddressCRUD

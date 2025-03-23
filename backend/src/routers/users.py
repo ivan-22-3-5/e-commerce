@@ -5,7 +5,7 @@ from fastapi import APIRouter, status, Body
 
 from src.celery_tasks import send_email_confirmation_email
 from src.config import settings
-from src.crud import ConfirmationTokenCRUD, UserCRUD, ReviewsCRUD, CartCRUD, AddressCRUD, OrderCRUD
+from src.crud import ConfirmationTokenCRUD, UserCRUD, ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
 from src.db.models import ConfirmationToken, User, Cart
 from src.schemas.address import AddressOut
 from src.schemas.cart import CartOut
@@ -64,7 +64,7 @@ async def get_my_orders(user: CurrentUserDep, db: SessionDep):
 
 @router.get('/me/reviews', response_model=list[ReviewOut], status_code=status.HTTP_200_OK)
 async def get_my_reviews(user: CurrentUserDep, db: SessionDep):
-    return await ReviewsCRUD.get_by_user(user.id, db)
+    return await ReviewCRUD.get_by_user(user.id, db)
 
 
 @router.get('/me/addresses', response_model=list[AddressOut], status_code=status.HTTP_200_OK)

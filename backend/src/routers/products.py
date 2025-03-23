@@ -1,8 +1,12 @@
-from fastapi import APIRouter, status, Depends
+import uuid
 
-from src.crud import ProductCRUD, ReviewsCRUD
+from fastapi import APIRouter, status, Depends, UploadFile
+
+from src.config import settings
+from src.crud import ProductCRUD, ReviewCRUD
+from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError
 from src.db.models import Product
-from src.deps import SessionDep
+from src.deps import SessionDep, FileStorageDep
 from src.permissions import AdminRole
 from src.schemas.filtration import PaginationParams
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
@@ -39,5 +43,5 @@ async def update_product(product_id: int, product_update: ProductUpdate, db: Ses
 # region development postponed
 @router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
 async def get_product_reviews(product_id: int, db: SessionDep):
-    return await ReviewsCRUD.get_by_product(product_id, db)
+    return await ReviewCRUD.get_by_product(product_id, db)
 # endregion

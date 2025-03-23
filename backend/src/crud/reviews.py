@@ -4,7 +4,7 @@ from src.crud.base import Retrievable, Deletable, Creatable
 from src.db import models
 
 
-class ReviewsCRUD(Creatable, Retrievable, Deletable):
+class ReviewCRUD(Creatable, Retrievable, Deletable):
     model = models.Review
     key = models.Review.id
     not_found_message = "Review with the given id does not exist"

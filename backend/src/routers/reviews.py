@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from src.crud import ReviewsCRUD, ProductCRUD
+from src.crud import ReviewCRUD, ProductCRUD
 from src.custom_exceptions import NotEnoughRightsError
 from src.db.models import Review
 from src.deps import CurrentUserDep, SessionDep
@@ -18,7 +18,7 @@ router = APIRouter(
              dependencies=[ConfirmedEmail])
 async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
     product = await ProductCRUD.get(product_id, db)
-    await ReviewsCRUD.create(Review(
+    await ReviewCRUD.create(Review(
         product_id=product.id,
         user_id=user.id,
         **review.model_dump(),
@@ -33,5 +33,5 @@ async def delete_review(review_id: int, user: CurrentUserDep, db: SessionDep):
             raise NotEnoughRightsError("Only the owner can delete the review")
         return True
 
-    await ReviewsCRUD.delete(review_id, db, predicate=predicate)
+    await ReviewCRUD.delete(review_id, db, predicate=predicate)
     return Message(message="Review has been successfully deleted")
