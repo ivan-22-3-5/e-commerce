@@ -139,7 +139,7 @@ class ProductImage(Base):
     __tablename__ = 'product_images'
     id: Mapped[int] = mapped_column(primary_key=True)
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
-    url: Mapped[str]
+    uri: Mapped[str]
     is_primary: Mapped[bool]
 
 
