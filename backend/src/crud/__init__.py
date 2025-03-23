@@ -7,3 +7,4 @@ from .addresses import AddressCRUD
 from .orders import OrderCRUD
 from .tokens import RecoveryTokenCRUD, RefreshTokenCRUD, ConfirmationTokenCRUD
 from .payments import PaymentCRUD
+from .images import ProductImageCRUD
