@@ -1,6 +1,8 @@
 import os
 from abc import ABC, abstractmethod
 
+import aiofiles
+
 from src.config import settings
 
 
@@ -10,7 +12,6 @@ class FileStorage(ABC):
         pass
 
 
-# TODO: make async using aiofiles
 class LocalFileStorage(FileStorage):
     def __init__(self, base_path: str = 'files'):
         self.base_path = base_path.strip('/')
@@ -19,8 +20,8 @@ class LocalFileStorage(FileStorage):
         filepath = self.base_path + "/" + path
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-        with open(filepath, 'wb') as f:
-            f.write(file)
+        async with aiofiles.open(filepath, 'wb') as f:
+            await f.write(file)
 
 
 local_file_storage = LocalFileStorage(base_path=settings.FILES_DIR)
