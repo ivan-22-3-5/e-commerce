@@ -64,6 +64,9 @@ class Updatable(_CRUDBase):
         if entity_to_update and predicate is None or predicate(entity_to_update):
             for k, v in obj_update.model_dump(exclude_none=True).items():
                 setattr(entity_to_update, k, v)
+            await db.flush()
+            await db.refresh(entity_to_update)
+            return entity_to_update
 
 
 class Deletable(_CRUDBase):
