@@ -3,13 +3,12 @@ import uuid
 from fastapi import APIRouter, status, Depends, UploadFile
 
 from src.config import settings
-from src.crud import ProductCRUD, ReviewCRUD, ProductImageCRUD
+from src.crud import ProductCRUD, ReviewCRUD
 from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError, LimitExceededError
-from src.db.models import Product, ProductImage
+from src.db.models import Product
 from src.deps import SessionDep, FileStorageDep
 from src.permissions import AdminRole
 from src.schemas.filtration import PaginationParams
-from src.schemas.image import ProductImageOut
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
 from src.schemas.review import ReviewOut
 
@@ -47,7 +46,7 @@ async def delete_product(product_id: int, db: SessionDep):
 
 
 # TODO: add resolution/aspect ratio regulation
-@router.post('/{product_id}/images', status_code=status.HTTP_201_CREATED, response_model=ProductImageOut,
+@router.post('/{product_id}/images', status_code=status.HTTP_204_NO_CONTENT,
              dependencies=[AdminRole])
 async def add_product_image(product_id: int, file: UploadFile,
                             db: SessionDep, storage: FileStorageDep):
@@ -65,14 +64,11 @@ async def add_product_image(product_id: int, file: UploadFile,
 
     ext = file.filename.split('.')[-1]
     file = await file.read()
-    uri = f"{product_id}/{uuid.uuid4().hex}.{ext}"
+    filename = f"{uuid.uuid4().hex}.{ext}"
 
-    await storage.save(file, uri)
-    return await ProductImageCRUD.create(ProductImage(
-        product_id=product_id,
-        uri=uri,
-        is_primary=len(product.images) == 0
-    ), db)
+    await storage.save(file, f"{product_id}/{filename}")
+    # creating a new list is necessary for sqlalchemy to recognize the change
+    product.images = product.images + [filename]
 
 
 # region development postponed

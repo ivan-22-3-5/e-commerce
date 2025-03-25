@@ -1,9 +1,10 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from pydantic_core.core_schema import ValidationInfo
 
+from src.config import settings
 from src.schemas.base import ObjUpdate
-from src.schemas.image import ProductImageOut
 
 
 class ProductIn(BaseModel):
@@ -20,8 +21,12 @@ class ProductOut(BaseModel):
     title: str
     description: str
     full_price: float
+    images: list[str]
 
-    images: list[ProductImageOut]
+    @field_validator('images', mode='after')
+    @classmethod
+    def replace_filenames_with_urls(cls, images: list[str], info: ValidationInfo):
+        return list(map(lambda filename: f"{settings.IMAGES_BASE_URL}{info.data['id']}/{filename}", images))
 
 
 class ProductUpdate(ObjUpdate):
@@ -29,5 +34,5 @@ class ProductUpdate(ObjUpdate):
     description: Optional[str] = Field(default=None, max_length=256)
     full_price: Optional[float] = Field(default=None, ge=0)
     discount: Optional[float] = Field(default=None, ge=0, le=100)
-    enabled: Optional[bool] = Field(default=None)
+    is_active: Optional[bool] = Field(default=None)
     quantity: Optional[int] = Field(default=None, gt=0)

@@ -1,6 +1,7 @@
 from datetime import datetime, UTC
 
-from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column
+from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, declared_attr
 from sqlalchemy.orm import mapped_column
@@ -135,14 +136,6 @@ class Order(Base):
         self.items = [OrderItem(**item) for item in items]
 
 
-class ProductImage(Base):
-    __tablename__ = 'product_images'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
-    uri: Mapped[str]
-    is_primary: Mapped[bool]
-
-
 class Product(Base):
     __tablename__ = 'products'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -155,7 +148,7 @@ class Product(Base):
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    images: Mapped[list["ProductImage"]] = relationship('ProductImage', lazy='selectin', cascade="all, delete-orphan")
+    images: Mapped[list[str]] = mapped_column(JSONB, default=list)
 
     reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
 
