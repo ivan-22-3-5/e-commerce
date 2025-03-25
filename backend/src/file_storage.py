@@ -11,6 +11,10 @@ class FileStorage(ABC):
     async def save(self, file: str, path: str):
         pass
 
+    @abstractmethod
+    async def delete(self, path: str):
+        pass
+
 
 class LocalFileStorage(FileStorage):
     def __init__(self, base_path: str = 'files'):
@@ -22,6 +26,11 @@ class LocalFileStorage(FileStorage):
 
         async with aiofiles.open(filepath, 'wb') as f:
             await f.write(file)
+
+    async def delete(self, path: str):
+        filepath = self.base_path + "/" + path
+        if os.path.exists(filepath):
+            os.remove(filepath)
 
 
 local_file_storage = LocalFileStorage(base_path=settings.FILES_DIR)
