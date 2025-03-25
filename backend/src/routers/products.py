@@ -4,7 +4,8 @@ from fastapi import APIRouter, status, Depends, UploadFile
 
 from src.config import settings
 from src.crud import ProductCRUD, ReviewCRUD
-from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError, LimitExceededError
+from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError, LimitExceededError, \
+    ResourceDoesNotExistError
 from src.db.models import Product
 from src.deps import SessionDep, FileStorageDep
 from src.permissions import AdminRole
@@ -69,6 +70,22 @@ async def add_product_image(product_id: int, file: UploadFile,
     await storage.save(file, f"{product_id}/{filename}")
     # creating a new list is necessary for sqlalchemy to recognize the change
     product.images = product.images + [filename]
+
+
+@router.put('/{product_id}/images', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
+async def change_product_images(product_id: int, images: list[str], db: SessionDep, storage: FileStorageDep):
+    product = await ProductCRUD.get(product_id, db)
+
+    current_images = set(product.images)
+    new_images = set(images)
+
+    if not new_images.issubset(current_images):
+        raise ResourceDoesNotExistError("One or more of images does not exist")
+
+    for filename in current_images - new_images:
+        await storage.delete(f"{product_id}/{filename}")
+
+    product.images = images
 
 
 # region development postponed
