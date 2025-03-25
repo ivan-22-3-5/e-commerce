@@ -9,19 +9,12 @@ erDiagram
         int quantity
         bool is_active
         timestamp created_at
-    }
-
-    PRODUCT_IMAGE {
-        int id PK
-        int product_id FK
-        string url
-        bool is_primary
+        list[string] images
     }
     
     CATEGORY {
         string name PK
     }
 
-    PRODUCT ||--o{ PRODUCT_IMAGE: "0..10"
     PRODUCT }o--o{ CATEGORY: ""
 ```
