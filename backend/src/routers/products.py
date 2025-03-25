@@ -80,7 +80,7 @@ async def change_product_images(product_id: int, images: list[str], db: SessionD
     new_images = set(images)
 
     if not new_images.issubset(current_images):
-        raise ResourceDoesNotExistError("One or more of images does not exist")
+        raise ResourceDoesNotExistError("One or more of the specified images does not exist")
 
     for filename in current_images - new_images:
         await storage.delete(f"{product_id}/{filename}")
