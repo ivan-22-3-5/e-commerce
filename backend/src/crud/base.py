@@ -21,8 +21,8 @@ class _CRUDBase:
         return result.scalars().first()
 
     @classmethod
-    async def _get_all(cls, criteria, db: AsyncSession, pagination: PaginationParams = None):
-        result = await db.execute(select(cls.model).filter(criteria)
+    async def _get_all(cls, criteria, db: AsyncSession, pagination: PaginationParams = None, order_by=None):
+        result = await db.execute(select(cls.model).filter(criteria).order_by(order_by)
                                   .limit(pagination and pagination.limit).offset(pagination and pagination.offset))
         return result.scalars().all()
 
