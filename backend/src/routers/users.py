@@ -3,7 +3,6 @@ from typing import Optional, Annotated
 
 from fastapi import APIRouter, status, Body
 
-from src.celery_tasks import send_email_confirmation_email
 from src.config import settings
 from src.crud import ConfirmationTokenCRUD, UserCRUD, ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
 from src.db.models import ConfirmationToken, User, Cart
@@ -33,9 +32,9 @@ async def create_user(user: UserIn, db: SessionDep):
     confirmation_token = create_jwt_token(user_id=new_user.id,
                                           expires_in=timedelta(minutes=settings.CONFIRMATION_TOKEN_EXPIRE_MINUTES))
     await ConfirmationTokenCRUD.upsert(ConfirmationToken(user_id=new_user.id, token=confirmation_token), db=db)
-    send_email_confirmation_email.delay(username=new_user.username,
-                                        link=settings.EMAIL_CONFIRMATION_LINK + confirmation_token,
-                                        email_address=new_user.email)
+    # send_email_confirmation_email.delay(username=new_user.username,
+    #                                     link=settings.EMAIL_CONFIRMATION_LINK + confirmation_token,
+    #                                     email_address=new_user.email)
     return Message(message="Confirmation email sent")
 
 

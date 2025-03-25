@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
-from src.celery_tasks import send_password_recovery_email
 from src.custom_exceptions import InvalidCredentialsError, InvalidTokenError, ResourceDoesNotExistError
 from src.db.models import RefreshToken, RecoveryToken
 from src.schemas.new_password import NewPasswordIn
@@ -73,9 +72,9 @@ async def recover_password(email: EmailStr, db: SessionDep):
                                       expires_in=timedelta(minutes=settings.RECOVERY_TOKEN_EXPIRE_MINUTES))
     await RecoveryTokenCRUD.upsert(RecoveryToken(user_id=user.id,
                                                  token=recovery_token), db)
-    send_password_recovery_email.delay(username=user.username,
-                                       link=settings.PASSWORD_RECOVERY_LINK + recovery_token,
-                                       email_address=email)
+    # send_password_recovery_email.delay(username=user.username,
+    #                                    link=settings.PASSWORD_RECOVERY_LINK + recovery_token,
+    #                                    email_address=email)
     return Message(message="Recovery email sent")
 
 
