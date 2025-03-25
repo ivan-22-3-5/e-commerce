@@ -41,6 +41,11 @@ async def update_product(product_id: int, product_update: ProductUpdate, db: Ses
     return await ProductCRUD.update(product_id, product_update, db)
 
 
+@router.delete('/{product_id}', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
+async def delete_product(product_id: int, db: SessionDep):
+    await ProductCRUD.delete(product_id, db)
+
+
 # TODO: add resolution/aspect ratio regulation
 @router.post('/{product_id}/images', status_code=status.HTTP_201_CREATED, response_model=ProductImageOut,
              dependencies=[AdminRole])
