@@ -1,6 +1,7 @@
 from datetime import datetime, UTC
+from typing import Optional
 
-from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column, text
+from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, declared_attr
@@ -20,13 +21,15 @@ product_category_association = Table(
 class User(Base):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(primary_key=True)
+    identity_provider_id: Mapped[Optional[str]] = mapped_column(unique=True, nullable=True)
     email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str] = mapped_column(String(72))
-    username: Mapped[str] = mapped_column(String(30))
+    password: Mapped[Optional[str]] = mapped_column(String(72), nullable=True)
+    name: Mapped[str] = mapped_column(String(50))
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Address(Base):

@@ -5,7 +5,7 @@ from fastapi import APIRouter, status, Body
 
 from src.config import settings
 from src.crud import ConfirmationTokenCRUD, UserCRUD, ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
-from src.db.models import ConfirmationToken, User, Cart
+from src.db.models import ConfirmationToken, User
 from src.schemas.address import AddressOut
 from src.schemas.cart import CartOut
 from src.schemas.item import ItemIn
@@ -28,7 +28,6 @@ async def create_user(user: UserIn, db: SessionDep):
     if await UserCRUD.get_by_email(user.email, db=db):
         raise ResourceAlreadyExistsError("Email is already registered")
     new_user = await UserCRUD.create(User(**user.model_dump()), db=db)
-    await CartCRUD.create(Cart(user_id=new_user.id), db=db)
     confirmation_token = create_jwt_token(user_id=new_user.id,
                                           expires_in=timedelta(minutes=settings.CONFIRMATION_TOKEN_EXPIRE_MINUTES))
     await ConfirmationTokenCRUD.upsert(ConfirmationToken(user_id=new_user.id, token=confirmation_token), db=db)
@@ -45,7 +44,7 @@ async def confirm_email(token: Annotated[str, Body(embed=True)], db: SessionDep)
     if not (db_token and db_token.token == token):
         raise InvalidTokenError("Invalid confirmation token")
     user = await UserCRUD.get(user_id, db)
-    user.is_confirmed = True
+    user.is_email_verified = True
 
     await ConfirmationTokenCRUD.delete(user_id, db)
     return Message(message="The user is confirmed")
