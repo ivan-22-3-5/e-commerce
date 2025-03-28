@@ -10,7 +10,7 @@ def assert_admin_role(user: CurrentUserDep):
 
 
 def assert_confirmed_email(user: CurrentUserDep):
-    if not user.is_confirmed:
+    if not user.is_email_verified:
         raise NotEnoughRightsError("Only user with a confirmed email can access this endpoint")
 
 

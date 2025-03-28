@@ -17,6 +17,11 @@ class UserIn(BaseModel):
 class UserOut(BaseModel):
     id: int
     email: EmailStr
-    username: str
     name: str
 
+
+class GoogleUserInfo(BaseModel):
+    id: str = Field(validation_alias="sub")
+    name: str
+    email: str
+    email_verified: bool
