@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, status, Depends, UploadFile
 
-from src.config import settings
+from src.config import settings, rules
 from src.crud import ProductCRUD, ReviewCRUD
 from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError, LimitExceededError, \
     ResourceDoesNotExistError
@@ -60,7 +60,7 @@ async def add_product_image(product_id: int, file: UploadFile,
 
     product = await ProductCRUD.get(product_id, db)
 
-    if len(product.images) >= settings.MAX_IMAGES_PER_PRODUCT:
+    if len(product.images) >= rules.MAX_IMAGES_PER_PRODUCT:
         raise LimitExceededError("Product already has the maximum number of images")
 
     ext = file.filename.split('.')[-1]

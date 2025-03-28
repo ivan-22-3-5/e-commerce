@@ -8,13 +8,14 @@ from sqlalchemy.orm import Mapped, declared_attr
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
+from src.config import rules
 from src.custom_types import OrderStatus
 from src.db.db import Base
 
 product_category_association = Table(
     'product_category_association', Base.metadata,
     Column('product_id', Integer, ForeignKey('products.id'), primary_key=True),
-    Column('category_name', String(30), ForeignKey('categories.name'), primary_key=True)
+    Column('category_name', String(rules.MAX_CATEGORY_NAME_LENGTH), ForeignKey('categories.name'), primary_key=True)
 )
 
 
@@ -23,8 +24,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     identity_provider_id: Mapped[Optional[str]] = mapped_column(unique=True, nullable=True)
     email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[Optional[str]] = mapped_column(String(72), nullable=True)
-    name: Mapped[str] = mapped_column(String(50))
+    password: Mapped[Optional[str]] = mapped_column(String(rules.MAX_HASHED_PASSWORD_LENGTH), nullable=True)
+    name: Mapped[str] = mapped_column(String(rules.MAX_USERNAME_LENGTH))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -142,8 +143,8 @@ class Order(Base):
 class Product(Base):
     __tablename__ = 'products'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(50))
-    description: Mapped[str] = mapped_column(String(1000))
+    title: Mapped[str] = mapped_column(String(rules.MAX_PRODUCT_TITLE_LENGTH))
+    description: Mapped[str] = mapped_column(String(rules.MAX_PRODUCT_DESCRIPTION_LENGTH))
     quantity: Mapped[int]
     full_price: Mapped[float]
     discount: Mapped[int] = mapped_column(default=0)
@@ -167,7 +168,7 @@ class Product(Base):
 
 class Category(Base):
     __tablename__ = 'categories'
-    name: Mapped[str] = mapped_column(String(30), primary_key=True)
+    name: Mapped[str] = mapped_column(String(rules.MAX_CATEGORY_NAME_LENGTH), primary_key=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
