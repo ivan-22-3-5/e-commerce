@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiohttp import ClientSession
 
+from src.clients.http_client import get_http_client
 from src.config import settings
 from src.crud.users import UserCRUD
 from src.db import models
@@ -22,11 +23,6 @@ SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 async def get_current_user(token: TokenDep, db: SessionDep):
     return await UserCRUD.get(get_user_id_from_jwt(token), db)
-
-
-async def get_http_client():
-    async with ClientSession() as session:
-        yield session
 
 
 CurrentUserDep = Annotated[models.User, Depends(get_current_user)]
