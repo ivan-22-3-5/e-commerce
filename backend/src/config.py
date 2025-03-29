@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     SMTP_MAIL: str
     SMTP_SERVER: str
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+
     CELERY_BROKER_URL: str
     CELERY_BACKEND_URL: str
 

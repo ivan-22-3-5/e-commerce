@@ -2,10 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiohttp import ClientSession
 
 from src.clients.http_client import get_http_client
+from src.clients.redis_client import get_redis_client
 from src.config import settings
 from src.crud.users import UserCRUD
 from src.db import models
@@ -63,3 +65,5 @@ async def get_google_user_info(access_token: GoogleAccessTokenDep, http: HTTPCli
 
 
 GoogleUserInfoDep = Annotated[GoogleUserInfo, Depends(get_google_user_info)]
+
+RedisClientDep = Annotated[Redis, Depends(get_redis_client)]
