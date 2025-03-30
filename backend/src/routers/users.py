@@ -29,7 +29,7 @@ async def create_user(user: UserIn, db: SessionDep):
         raise ResourceAlreadyExistsError("Email is already registered")
     new_user = await UserCRUD.create(User(**user.model_dump()), db=db)
     confirmation_token = create_jwt_token(user_id=new_user.id,
-                                          expires_in=timedelta(minutes=settings.CONFIRMATION_TOKEN_EXPIRE_MINUTES))
+                                          expires_in=timedelta(minutes=settings.CONFIRMATION_TOKEN_EXPIRATION_MINUTES))
     await ConfirmationTokenCRUD.upsert(ConfirmationToken(user_id=new_user.id, token=confirmation_token), db=db)
     # send_email_confirmation_email.delay(username=new_user.username,
     #                                     link=settings.EMAIL_CONFIRMATION_LINK + confirmation_token,

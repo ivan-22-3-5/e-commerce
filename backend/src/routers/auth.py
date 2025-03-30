@@ -12,7 +12,7 @@ from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD, UserCRUD
 from src.custom_exceptions import InvalidCredentialsError, InvalidTokenError, ResourceDoesNotExistError, \
     ResourceAlreadyExistsError
 from src.db.models import RefreshToken, RecoveryToken, User
-from src.deps import TokenDep, SessionDep, GoogleUserInfoDep
+from src.deps import TokenDep, SessionDep, GoogleUserInfoDep, RedisClientDep
 from src.schemas.message import Message
 from src.schemas.new_password import NewPasswordIn
 from src.schemas.token import Token
@@ -26,15 +26,15 @@ router = APIRouter(
 
 async def handle_user_tokens(user_id: int, response: Response, db: AsyncSession):
     access_token = create_jwt_token(user_id=user_id,
-                                    expires_in=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+                                    expires_in=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_MINUTES))
     refresh_token = create_jwt_token(user_id=user_id,
-                                     expires_in=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS))
+                                     expires_in=timedelta(days=settings.REFRESH_TOKEN_EXPIRATION_DAYS))
     await RefreshTokenCRUD.upsert(RefreshToken(user_id=user_id, token=refresh_token), db)
     response.set_cookie(key="refresh_token",
                         value=refresh_token,
                         httponly=True,
                         secure=False,  # should be True in production
-                        expires=datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+                        expires=datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRATION_DAYS),
                         samesite=settings.SAME_SITE_COOKIE)
     return {'access_token': access_token, "token_type": "bearer"}
 
@@ -101,7 +101,7 @@ async def recover_password(email: EmailStr, db: SessionDep):
     if (user := await UserCRUD.get_by_email(email, db)) is None:
         raise ResourceDoesNotExistError("The given email is not registered yet")
     recovery_token = create_jwt_token(user_id=user.id,
-                                      expires_in=timedelta(minutes=settings.RECOVERY_TOKEN_EXPIRE_MINUTES))
+                                      expires_in=timedelta(minutes=settings.RECOVERY_TOKEN_EXPIRATION_MINUTES))
     await RecoveryTokenCRUD.upsert(RecoveryToken(user_id=user.id,
                                                  token=recovery_token), db)
     # send_password_recovery_email.delay(username=user.username,
