@@ -13,12 +13,6 @@ def send_password_recovery_email(username, link, email_address):
 
 
 @celery.task
-def send_email_confirmation_email(username, link, email_address):
-    send_email(email_address, subject="Email confirmation", template_name="email_confirmation.html",
-               username=username, link=link)
-
-
-@celery.task
 def send_confirmation_code_email(code, email_address):
     send_email(email_address, subject="Confirmation code", template_name="confirmation_code.html",
                code=code)

@@ -16,11 +16,6 @@ class TokenCRUD(Creatable, Retrievable, Deletable):
             await cls.create(token, db=db)
 
 
-class ConfirmationTokenCRUD(TokenCRUD):
-    model = models.ConfirmationToken
-    key = models.ConfirmationToken.user_id
-
-
 class RecoveryTokenCRUD(TokenCRUD):
     model = models.RecoveryToken
     key = models.RecoveryToken.user_id

@@ -58,10 +58,6 @@ class RecoveryToken(TokenBase):
     __tablename__ = 'recovery_tokens'
 
 
-class ConfirmationToken(TokenBase):
-    __tablename__ = 'confirmation_tokens'
-
-
 class ItemBase(Base):
     __abstract__ = True
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'), primary_key=True)

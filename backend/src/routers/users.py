@@ -1,53 +1,20 @@
-from datetime import timedelta
-from typing import Optional, Annotated
+from typing import Optional
 
-from fastapi import APIRouter, status, Body
+from fastapi import APIRouter, status
 
-from src.config import settings
-from src.crud import ConfirmationTokenCRUD, UserCRUD, ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
-from src.db.models import ConfirmationToken, User
+from src.crud import ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
 from src.schemas.address import AddressOut
 from src.schemas.cart import CartOut
 from src.schemas.item import ItemIn
-from src.schemas.message import Message
 from src.schemas.order import OrderOut
 from src.schemas.review import ReviewOut
-from src.schemas.user import UserIn, UserOut
+from src.schemas.user import UserOut
 from src.deps import CurrentUserDep, SessionDep
-from src.custom_exceptions import ResourceAlreadyExistsError, InvalidTokenError
-from src.utils import create_jwt_token, get_user_id_from_jwt
 
 router = APIRouter(
     prefix='/users',
     tags=['users']
 )
-
-
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
-async def create_user(user: UserIn, db: SessionDep):
-    if await UserCRUD.get_by_email(user.email, db=db):
-        raise ResourceAlreadyExistsError("Email is already registered")
-    new_user = await UserCRUD.create(User(**user.model_dump()), db=db)
-    confirmation_token = create_jwt_token(user_id=new_user.id,
-                                          expires_in=timedelta(minutes=settings.CONFIRMATION_TOKEN_EXPIRATION_MINUTES))
-    await ConfirmationTokenCRUD.upsert(ConfirmationToken(user_id=new_user.id, token=confirmation_token), db=db)
-    # send_email_confirmation_email.delay(username=new_user.username,
-    #                                     link=settings.EMAIL_CONFIRMATION_LINK + confirmation_token,
-    #                                     email_address=new_user.email)
-    return Message(message="Confirmation email sent")
-
-
-@router.post('/confirm', status_code=status.HTTP_200_OK, response_model=Message)
-async def confirm_email(token: Annotated[str, Body(embed=True)], db: SessionDep):
-    user_id = get_user_id_from_jwt(token)
-    db_token = await ConfirmationTokenCRUD.get(user_id, db)
-    if not (db_token and db_token.token == token):
-        raise InvalidTokenError("Invalid confirmation token")
-    user = await UserCRUD.get(user_id, db)
-    user.is_email_verified = True
-
-    await ConfirmationTokenCRUD.delete(user_id, db)
-    return Message(message="The user is confirmed")
 
 
 @router.get('/me', response_model=UserOut, status_code=status.HTTP_200_OK)
