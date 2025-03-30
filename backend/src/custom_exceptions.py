@@ -25,6 +25,10 @@ class InvalidCredentialsError(PetStoreApiError):
     pass
 
 
+class InvalidConfirmationCodeError(PetStoreApiError):
+    pass
+
+
 class InvalidPayloadError(PetStoreApiError):
     pass
 

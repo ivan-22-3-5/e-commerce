@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .content {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Confirmation code for Pet's Love</h2>
+    </div>
+    <div class="content">
+        <p>Hello</p>
+        <p>Thank you for registering with us. Here is your confirmation code:</p>
+        <p>{{ code }}</p>
+        <p>If you did not create an account, please ignore this email.</p>
+        <p>Thank you,<br>The Pet Store Team</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import random
 import smtplib
 from datetime import datetime, timedelta, UTC
 from email.mime.multipart import MIMEMultipart
@@ -8,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 from passlib.context import CryptContext
 from jose import JWTError, ExpiredSignatureError, jwt
 
-from src.config import settings
+from src.config import settings, rules
 from src.custom_exceptions import InvalidTokenError
 from src.db import models
 
@@ -63,10 +64,10 @@ def create_payment_intent(order: models.Order):
     )
 
 
-def send_email(username: str, link: str, email_address: str, subject: str, template_name: str):
-    env = Environment(loader=FileSystemLoader('src/html_templates'))
+def send_email(email_address: str, subject: str, template_name: str, **kwargs):
+    env = Environment(loader=FileSystemLoader('src/email_templates'))
     template = env.get_template(template_name)
-    html_content = template.render(username=username, link=link)
+    html_content = template.render(**kwargs)
 
     msg = MIMEMultipart()
     msg['From'] = settings.SMTP_MAIL
@@ -79,3 +80,8 @@ def send_email(username: str, link: str, email_address: str, subject: str, templ
         server.starttls()
         server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
         server.send_message(msg)
+
+
+def generate_confirmation_code():
+    return random.randint(rules.CONFIRMATION_CODE_LOWER_BOUND,
+                          rules.CONFIRMATION_CODE_UPPER_BOUND)

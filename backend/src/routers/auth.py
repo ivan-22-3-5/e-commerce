@@ -10,13 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD, UserCRUD
 from src.custom_exceptions import InvalidCredentialsError, InvalidTokenError, ResourceDoesNotExistError, \
-    ResourceAlreadyExistsError
+    ResourceAlreadyExistsError, InvalidConfirmationCodeError
 from src.db.models import RefreshToken, RecoveryToken, User
 from src.deps import TokenDep, SessionDep, GoogleUserInfoDep, RedisClientDep
 from src.schemas.message import Message
 from src.schemas.new_password import NewPasswordIn
 from src.schemas.token import Token
-from src.utils import create_jwt_token, get_user_id_from_jwt, verify_password
+from src.schemas.user import UserIn, UserOut
+from src.utils import create_jwt_token, get_user_id_from_jwt, verify_password, generate_confirmation_code
 
 router = APIRouter(
     prefix='/auth',
@@ -69,6 +70,33 @@ async def google_callback(res: Response, google_user: GoogleUserInfoDep, db: Ses
     ), db=db)
 
     return await handle_user_tokens(new_user.id, res, db)
+
+
+@router.post('/{email}/send_confirmation_code', status_code=status.HTTP_200_OK, response_model=Message)
+async def send_confirmation_code(email: EmailStr, db: SessionDep, redis: RedisClientDep):
+    if await UserCRUD.get_by_email(email, db=db):
+        raise ResourceAlreadyExistsError("Email is already registered")
+    confirmation_code = generate_confirmation_code()
+    await redis.set(f"confirmation_code:{email}",
+                    confirmation_code,
+                    ex=settings.CONFIRMATION_CODE_EXPIRATION_SECONDS)
+    # send_confirmation_code_email.delay(code=confirmation_code,
+    #                                    email_address=email)
+    return Message(message="Confirmation code sent")
+
+
+@router.post('/register', status_code=status.HTTP_200_OK, response_model=UserOut)
+async def register(user: UserIn, db: SessionDep, redis: RedisClientDep):
+    if await UserCRUD.get_by_email(user.email, db=db):
+        raise ResourceAlreadyExistsError("Email is already registered")
+
+    confirmation_code = int(await redis.get(f"confirmation_code:{user.email}"))
+    # TODO: user.confirmation_code != 999999 is a backdoor, SHOULD BE REMOVED
+    if confirmation_code != user.confirmation_code and user.confirmation_code != 999999:
+        raise InvalidConfirmationCodeError("Invalid confirmation code")
+    await redis.delete(f"confirmation_code:{user.email}")
+
+    return await UserCRUD.create(User(**user.model_dump(exclude={'confirmation_code'})), db=db)
 
 
 @router.post('/login', status_code=status.HTTP_200_OK, response_model=Token)
