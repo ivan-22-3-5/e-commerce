@@ -138,7 +138,7 @@ async def recover_password(email: EmailStr, db: SessionDep):
     return Message(message="Recovery email sent")
 
 
-@router.post('/reset-password', status_code=status.HTTP_200_OK, response_model=Message)
+@router.put('/me/password/', status_code=status.HTTP_200_OK, response_model=Message)
 async def reset_password(new_password: NewPasswordIn, db: SessionDep):
     user_id = get_user_id_from_jwt(new_password.token)
     db_token = await RecoveryTokenCRUD.get(user_id, db, on_not_found='return-none')
