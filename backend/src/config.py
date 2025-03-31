@@ -49,7 +49,6 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URL: str
 
     PASSWORD_RECOVERY_LINK: str
-    EMAIL_CONFIRMATION_LINK: str
 
     POSTGRESQL_DB_URL: str
 
