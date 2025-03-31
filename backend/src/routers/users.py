@@ -39,19 +39,22 @@ async def get_my_addresses(user: CurrentUserDep, db: SessionDep):
 
 @router.get('/me/cart', response_model=CartOut, status_code=status.HTTP_200_OK)
 async def get_my_cart(user: CurrentUserDep, db: SessionDep):
-    return await CartCRUD.get(user.id, db)
+    return await CartCRUD.get_cart(user.id, db)
 
 
 @router.post('/me/cart/items', response_model=Optional[CartOut], status_code=status.HTTP_200_OK)
 async def add_item_to_cart(user: CurrentUserDep, item: ItemIn, db: SessionDep):
-    return await CartCRUD.add_item(user.id, item, db)
+    await CartCRUD.add_item(user.id, item, db)
+    return await CartCRUD.get_cart(user.id, db)
 
 
 @router.delete('/me/cart/items', response_model=Optional[CartOut], status_code=status.HTTP_200_OK)
 async def remove_item_from_cart(user: CurrentUserDep, item: ItemIn, db: SessionDep):
-    return await CartCRUD.remove_item(user.id, item, db)
+    await CartCRUD.remove_item(user.id, item, db)
+    return await CartCRUD.get_cart(user.id, db)
 
 
 @router.post('/me/cart/clear', response_model=CartOut, status_code=status.HTTP_200_OK)
 async def clear_cart(user: CurrentUserDep, db: SessionDep):
-    return await CartCRUD.clear(user.id, db)
+    await CartCRUD.clear(user.id, db)
+    return await CartCRUD.get_cart(user.id, db)

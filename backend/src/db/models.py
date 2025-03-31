@@ -74,37 +74,7 @@ class ItemBase(Base):
 
 class CartItem(ItemBase):
     __tablename__ = 'cart_items'
-    cart_id: Mapped[int] = mapped_column(ForeignKey('carts.user_id'), primary_key=True)
-
-
-# TODO: remove model, move and refactor logic associated with it
-class Cart(Base):
-    __tablename__ = 'carts'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-
-    items: Mapped[list["CartItem"]] = relationship('CartItem', lazy="selectin", cascade="all, delete-orphan")
-
-    @hybrid_property
-    def total_price(self):
-        return sum(item.total_price for item in self.items)
-
-    def add_item(self, product_id: int, quantity: int):
-        existing_item = next((item for item in self.items if item.product_id == product_id), None)
-        if existing_item:
-            existing_item.quantity += quantity
-        else:
-            self.items.append(CartItem(product_id=product_id, quantity=quantity))
-
-    def remove_item(self, product_id: int, quantity: int):
-        existing_item = next((item for item in self.items if item.product_id == product_id), None)
-        if existing_item:
-            if existing_item.quantity <= quantity:
-                self.items.remove(existing_item)
-            else:
-                existing_item.quantity -= quantity
-
-    def clear(self):
-        self.items = []
 
 
 class OrderItem(ItemBase):
