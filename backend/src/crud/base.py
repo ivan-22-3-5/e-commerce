@@ -1,10 +1,11 @@
+import re
 from typing import Literal, Callable, Any
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.custom_exceptions import ResourceDoesNotExistError
+from src.custom_exceptions import ResourceDoesNotExistError, ResourceAlreadyExistsError
 from src.logger import logger
 from src.schemas.base import ObjUpdate
 from src.schemas.filtration import PaginationParams
@@ -42,7 +43,19 @@ class Creatable(_CRUDBase):
             return obj
         except IntegrityError as e:
             # TODO: add robust error handling
-            logger.error(e)
+            error_message = str(e.orig)
+
+            if "UniqueViolationError" in error_message:
+                err_msg = f"{cls.model.__name__} with the given attributes already exists"
+
+                if match := re.search(r"Key \((\w+)\)", error_message):
+                    err_msg = f"{cls.model.__name__} with the given {match.group(1)} already exists"
+
+                raise ResourceAlreadyExistsError(err_msg)
+            elif "ForeignKeyViolationError" in error_message:
+                logger.error(f"ForeignKeyViolationError: {e.args}")
+            else:
+                logger.error(f"Unexpected IntegrityError: {e}")
 
 
 class Retrievable(_CRUDBase):
