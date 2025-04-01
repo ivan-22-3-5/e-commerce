@@ -92,10 +92,9 @@ async def register(user: UserIn, db: SessionDep, redis: RedisClientDep):
 
     confirmation_code = await redis.get(f"confirmation_code:{user.email}")
     # TODO: user.confirmation_code != 999999 is a backdoor, SHOULD BE REMOVED
-    if (confirmation_code is None
-            or confirmation_code != int(user.confirmation_code)
-            and user.confirmation_code != 999999):
-        raise InvalidConfirmationCodeError("Invalid confirmation code")
+    if user.confirmation_code != 999999:
+        if confirmation_code is None or int(confirmation_code) != user.confirmation_code:
+            raise InvalidConfirmationCodeError("Invalid confirmation code")
     await redis.delete(f"confirmation_code:{user.email}")
 
     return await UserCRUD.create(User(**user.model_dump(exclude={'confirmation_code'})), db=db)
