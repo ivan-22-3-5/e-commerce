@@ -90,9 +90,11 @@ async def register(user: UserIn, db: SessionDep, redis: RedisClientDep):
     if await UserCRUD.get_by_email(user.email, db=db):
         raise ResourceAlreadyExistsError("Email is already registered")
 
-    confirmation_code = int(await redis.get(f"confirmation_code:{user.email}"))
+    confirmation_code = await redis.get(f"confirmation_code:{user.email}")
     # TODO: user.confirmation_code != 999999 is a backdoor, SHOULD BE REMOVED
-    if confirmation_code != user.confirmation_code and user.confirmation_code != 999999:
+    if (confirmation_code is None
+            or confirmation_code != int(user.confirmation_code)
+            and user.confirmation_code != 999999):
         raise InvalidConfirmationCodeError("Invalid confirmation code")
     await redis.delete(f"confirmation_code:{user.email}")
 
