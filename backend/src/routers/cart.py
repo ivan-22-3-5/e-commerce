@@ -9,7 +9,7 @@ from src.deps import CurrentUserDep, SessionDep
 
 router = APIRouter(
     prefix='/cart',
-    tags=['users']
+    tags=['cart']
 )
 
 
