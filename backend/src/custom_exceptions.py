@@ -47,3 +47,7 @@ class NotSupportedFileTypeError(PetStoreApiError):
 
 class LimitExceededError(PetStoreApiError):
     pass
+
+
+class InsufficientStockError(PetStoreApiError):
+    pass

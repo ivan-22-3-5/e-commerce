@@ -21,7 +21,9 @@ from src.custom_exceptions import (
     InvalidSignatureError,
     FileTooLargeError,
     NotSupportedFileTypeError,
-    LimitExceededError, InvalidConfirmationCodeError
+    LimitExceededError,
+    InvalidConfirmationCodeError,
+    InsufficientStockError
 )
 
 
@@ -81,6 +83,7 @@ exception_handlers = [
     (NotSupportedFileTypeError, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "File type is not allowed"),
     (LimitExceededError, status.HTTP_409_CONFLICT, "Limit exceeded"),
     (InvalidConfirmationCodeError, status.HTTP_401_UNAUTHORIZED, "Invalid confirmation code"),
+    (InsufficientStockError, status.HTTP_409_CONFLICT, "Out of stock"),
 ]
 
 for exc, code, message in exception_handlers:

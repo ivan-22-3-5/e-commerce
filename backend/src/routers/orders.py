@@ -1,15 +1,16 @@
 from fastapi import APIRouter, status
 
-from src.crud import OrderCRUD
-from src.custom_exceptions import (
-    NotEnoughRightsError,
-)
+from src.crud import OrderCRUD, ProductCRUD
 from src.custom_types import OrderStatus
 from src.db.models import Order
-from src.deps import CurrentUserDep, SessionDep
 from src.permissions import AdminRole
 from src.schemas.message import Message
 from src.schemas.order import OrderIn
+from src.deps import CurrentUserDep, SessionDep
+from src.custom_exceptions import (
+    ResourceDoesNotExistError,
+    NotEnoughRightsError, InsufficientStockError,
+)
 
 router = APIRouter(
     prefix='/orders',
@@ -19,6 +20,21 @@ router = APIRouter(
 
 @router.post('', status_code=status.HTTP_201_CREATED)
 async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
+    product_ids = list(map(lambda i: i.product_id, order.items))
+    # TODO: fix possible race condition
+    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids, db=db))}
+
+    for item in order.items:
+        product = products.get(item.product_id, None)
+
+        if product is None:
+            raise ResourceDoesNotExistError(f"Product with id {item.product_id} does not exist")
+
+        if product.quantity < item.quantity:
+            raise InsufficientStockError(f"Insufficient stock for product ID {item.product_id}")
+
+        products[item.product_id].quantity -= item.quantity
+
     return await OrderCRUD.create(Order(
         **order.model_dump(),
         user_id=user.id
