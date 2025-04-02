@@ -42,7 +42,6 @@ class Creatable(_CRUDBase):
             await db.refresh(obj)
             return obj
         except IntegrityError as e:
-            # TODO: add robust error handling
             error_message = str(e.orig)
 
             if "UniqueViolationError" in error_message:
@@ -53,7 +52,16 @@ class Creatable(_CRUDBase):
 
                 raise ResourceAlreadyExistsError(err_msg)
             elif "ForeignKeyViolationError" in error_message:
-                logger.error(f"ForeignKeyViolationError: {e.args}")
+                err_msg = f"Some entity {cls.model.__name__} depends on does not exists"
+
+                if (
+                        (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", error_message))
+                        and
+                        (table_match := re.search(r"not present in table \"(\w+)\"", error_message))
+                ):
+                    err_msg = f"There are no {table_match.group(1)} with the {key_match.group(1)}={key_match.group(2)}"
+
+                raise ResourceDoesNotExistError(err_msg)
             else:
                 logger.error(f"Unexpected IntegrityError: {e}")
 
