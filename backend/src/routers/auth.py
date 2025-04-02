@@ -87,9 +87,6 @@ async def send_confirmation_code(email: EmailStr, db: SessionDep, redis: RedisCl
 
 @router.post('/register', status_code=status.HTTP_200_OK, response_model=UserOut)
 async def register(user: UserIn, db: SessionDep, redis: RedisClientDep):
-    if await UserCRUD.get_by_email(user.email, db=db):
-        raise ResourceAlreadyExistsError("Email is already registered")
-
     confirmation_code = await redis.get(f"confirmation_code:{user.email}")
     # TODO: user.confirmation_code != 999999 is a backdoor, SHOULD BE REMOVED
     if user.confirmation_code != 999999:
