@@ -1,11 +1,7 @@
-from typing import Optional
-
 from fastapi import APIRouter, status
 
-from src.crud import ReviewCRUD, CartCRUD, AddressCRUD, OrderCRUD
+from src.crud import ReviewCRUD, AddressCRUD, OrderCRUD
 from src.schemas.address import AddressOut
-from src.schemas.cart import CartOut
-from src.schemas.item import ItemIn
 from src.schemas.order import OrderOut
 from src.schemas.review import ReviewOut
 from src.schemas.user import UserOut
@@ -35,26 +31,3 @@ async def get_my_reviews(user: CurrentUserDep, db: SessionDep):
 @router.get('/me/addresses', response_model=list[AddressOut], status_code=status.HTTP_200_OK)
 async def get_my_addresses(user: CurrentUserDep, db: SessionDep):
     return await AddressCRUD.get_by_user(user.id, db)
-
-
-@router.get('/me/cart', response_model=CartOut, status_code=status.HTTP_200_OK)
-async def get_my_cart(user: CurrentUserDep, db: SessionDep):
-    return await CartCRUD.get_cart(user.id, db)
-
-
-@router.post('/me/cart/items', response_model=Optional[CartOut], status_code=status.HTTP_200_OK)
-async def add_item_to_cart(user: CurrentUserDep, item: ItemIn, db: SessionDep):
-    await CartCRUD.add_item(user.id, item, db)
-    return await CartCRUD.get_cart(user.id, db)
-
-
-@router.delete('/me/cart/items', response_model=Optional[CartOut], status_code=status.HTTP_200_OK)
-async def remove_item_from_cart(user: CurrentUserDep, item: ItemIn, db: SessionDep):
-    await CartCRUD.remove_item(user.id, item, db)
-    return await CartCRUD.get_cart(user.id, db)
-
-
-@router.post('/me/cart/clear', response_model=CartOut, status_code=status.HTTP_200_OK)
-async def clear_cart(user: CurrentUserDep, db: SessionDep):
-    await CartCRUD.clear(user.id, db)
-    return await CartCRUD.get_cart(user.id, db)
