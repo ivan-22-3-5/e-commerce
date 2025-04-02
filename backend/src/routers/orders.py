@@ -3,7 +3,7 @@ from fastapi import APIRouter, status
 from src.crud import OrderCRUD, ProductCRUD, AddressCRUD
 from src.custom_types import OrderStatus
 from src.db.models import Order
-from src.permissions import ConfirmedEmail, AdminRole
+from src.permissions import AdminRole
 from src.schemas.client_secret import ClientSecret
 from src.schemas.message import Message
 from src.schemas.order import OrderIn
@@ -20,8 +20,7 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=ClientSecret,
-             dependencies=[ConfirmedEmail])
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=ClientSecret)
 async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
     address = await AddressCRUD.get(order.address_id, db)
     if address.user_id != user.id:

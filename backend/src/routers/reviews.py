@@ -4,7 +4,6 @@ from src.crud import ReviewCRUD, ProductCRUD
 from src.custom_exceptions import NotEnoughRightsError
 from src.db.models import Review
 from src.deps import CurrentUserDep, SessionDep
-from src.permissions import ConfirmedEmail
 from src.schemas.message import Message
 from src.schemas.review import ReviewIn
 
@@ -14,8 +13,7 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message,
-             dependencies=[ConfirmedEmail])
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
 async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
     product = await ProductCRUD.get(product_id, db)
     await ReviewCRUD.create(Review(

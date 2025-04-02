@@ -9,10 +9,4 @@ def assert_admin_role(user: CurrentUserDep):
         raise NotEnoughRightsError("Only admin user can access this endpoint")
 
 
-def assert_confirmed_email(user: CurrentUserDep):
-    if not user.is_email_verified:
-        raise NotEnoughRightsError("Only user with a confirmed email can access this endpoint")
-
-
 AdminRole = Depends(assert_admin_role)
-ConfirmedEmail = Depends(assert_confirmed_email)

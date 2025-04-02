@@ -27,7 +27,6 @@ class User(Base):
     password: Mapped[Optional[str]] = mapped_column(String(rules.MAX_HASHED_PASSWORD_LENGTH), nullable=True)
     name: Mapped[str] = mapped_column(String(rules.MAX_USERNAME_LENGTH))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
