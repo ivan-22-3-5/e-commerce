@@ -32,17 +32,6 @@ class User(Base):
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
 
-class Address(Base):
-    __tablename__ = 'addresses'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    fullname: Mapped[str]
-    country: Mapped[str]
-    city: Mapped[str]
-    street: Mapped[str]
-    zipcode: Mapped[str]
-
-
 class TokenBase(Base):
     __abstract__ = True
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
@@ -86,22 +75,19 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     status: Mapped[OrderStatus] = mapped_column(default=OrderStatus.PENDING)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    address_id: Mapped[int] = mapped_column(ForeignKey('addresses.id'))
     is_paid: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
-    address: Mapped["Address"] = relationship('Address', uselist=False)
     items: Mapped[list["OrderItem"]] = relationship('OrderItem', lazy='selectin')
 
     @hybrid_property
     def total_price(self):
         return sum(item.total_price for item in self.items)
 
-    def __init__(self, user_id: int, address_id: int, items: list[dict[str, int]]):
+    def __init__(self, user_id: int, items: list[dict[str, int]]):
         super().__init__()
         self.user_id = user_id
-        self.address_id = address_id
         self.items = [OrderItem(**item) for item in items]
 
 
