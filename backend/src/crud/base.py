@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.custom_exceptions import ResourceDoesNotExistError, ResourceAlreadyExistsError
+from src.db.db import Base
 from src.logger import logger
 from src.schemas.base import ObjUpdate
 from src.schemas.filtration import PaginationParams
@@ -45,23 +46,9 @@ class Creatable(_CRUDBase):
             error_message = str(e.orig)
 
             if "UniqueViolationError" in error_message:
-                err_msg = f"{cls.model.__name__} with the given attributes already exists"
-
-                if match := re.search(r"Key \((\w+)\)", error_message):
-                    err_msg = f"{cls.model.__name__} with the given {match.group(1)} already exists"
-
-                raise ResourceAlreadyExistsError(err_msg)
+                raise ResourceAlreadyExistsError(_craft_already_exists_error_message(cls.model, error_message))
             elif "ForeignKeyViolationError" in error_message:
-                err_msg = f"Some entity {cls.model.__name__} depends on does not exists"
-
-                if (
-                        (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", error_message))
-                        and
-                        (table_match := re.search(r"not present in table \"(\w+)\"", error_message))
-                ):
-                    err_msg = f"There are no {table_match.group(1)} with the {key_match.group(1)}={key_match.group(2)}"
-
-                raise ResourceDoesNotExistError(err_msg)
+                raise ResourceDoesNotExistError(_craft_doesnt_exist_error_message(cls.model, error_message))
             else:
                 logger.error(f"Unexpected IntegrityError: {e}")
 
@@ -99,3 +86,25 @@ class Deletable(_CRUDBase):
             raise ResourceDoesNotExistError(cls.not_found_message or f"Entity with key {key} not found.")
         if entity_to_delete and predicate is None or predicate(entity_to_delete):
             await db.delete(entity_to_delete)
+
+
+def _craft_already_exists_error_message(model: Base, raw_sql_error_msg: str) -> str:
+    err_msg = f"{model.__name__} with the given attributes already exists"
+
+    if match := re.search(r"Key \((\w+)\)", raw_sql_error_msg):
+        err_msg = f"{model.__name__} with the given {match.group(1)} already exists"
+
+    return err_msg
+
+
+def _craft_doesnt_exist_error_message(model: Base, raw_sql_error_msg: str) -> str:
+    err_msg = f"Some entity {model.__name__} depends on does not exists"
+
+    if (
+            (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg))
+            and
+            (table_match := re.search(r"not present in table \"(\w+)\"", raw_sql_error_msg))
+    ):
+        err_msg = f"There are no {table_match.group(1)} with the {key_match.group(1)}={key_match.group(2)}"
+
+    return err_msg
