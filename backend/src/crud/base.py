@@ -23,9 +23,15 @@ class _CRUDBase:
         return result.scalars().first()
 
     @classmethod
-    async def _get_all(cls, criteria, db: AsyncSession, pagination: PaginationParams = None, order_by=None):
-        result = await db.execute(select(cls.model).filter(criteria).order_by(order_by)
-                                  .limit(pagination and pagination.limit).offset(pagination and pagination.offset))
+    async def _get_all(cls, criteria, db: AsyncSession,
+                       pagination: PaginationParams = None, order_by=None,
+                       for_update: bool = False):
+        q = (select(cls.model)
+             .filter(criteria)
+             .order_by(order_by)
+             .limit(pagination and pagination.limit)
+             .offset(pagination and pagination.offset))
+        result = await db.execute(q.with_for_update() if for_update else q)
         return result.scalars().all()
 
     def __init_subclass__(cls, **kwargs):

@@ -15,9 +15,10 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
     async def get_all(cls, ids: list[int] = None, *,
                       pagination: PaginationParams = None,
                       is_active: bool | None = None,
-                      order_by=None, db: AsyncSession) -> list[models.Product] | None:
-        # TODO: rewrite condition
+                      order_by=None,
+                      for_update=False,
+                      db: AsyncSession) -> list[models.Product] | None:
         return await cls._get_all(and_(
             models.Product.id.in_(ids) if ids is not None else True,
             models.Product.is_active == is_active if is_active is not None else True
-        ), db, pagination=pagination, order_by=order_by or cls.key)
+        ), db, pagination=pagination, order_by=order_by or cls.key, for_update=for_update)

@@ -5,11 +5,12 @@ from src.custom_types import OrderStatus
 from src.db.models import Order
 from src.permissions import AdminRole
 from src.schemas.message import Message
-from src.schemas.order import OrderIn
+from src.schemas.order import OrderIn, OrderOut
 from src.deps import CurrentUserDep, SessionDep
 from src.custom_exceptions import (
     ResourceDoesNotExistError,
-    NotEnoughRightsError, InsufficientStockError,
+    NotEnoughRightsError,
+    InsufficientStockError,
 )
 
 router = APIRouter(
@@ -18,11 +19,12 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED)
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=OrderOut)
 async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
     product_ids = list(map(lambda i: i.product_id, order.items))
-    # TODO: fix possible race condition
-    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids, db=db))}
+    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
+                                                                              for_update=True,
+                                                                              db=db))}
 
     for item in order.items:
         product = products.get(item.product_id, None)
