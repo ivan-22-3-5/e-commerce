@@ -134,7 +134,7 @@ class Review(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
     rating: Mapped[int]
-    content: Mapped[str] = mapped_column(String(1000))
+    content: Mapped[str] = mapped_column(String(rules.MAX_REVIEW_CONTENT_LENGTH))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
