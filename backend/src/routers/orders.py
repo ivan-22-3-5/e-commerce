@@ -35,7 +35,7 @@ async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
         if product.quantity < item.quantity:
             raise InsufficientStockError(f"Insufficient stock for product ID {item.product_id}")
 
-        products[item.product_id].quantity -= item.quantity
+        product.quantity -= item.quantity
 
     return await OrderCRUD.create(Order(
         **order.model_dump(),
