@@ -43,13 +43,21 @@ async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
     ), db)
 
 
-@router.post('/{order_id}/cancel', status_code=status.HTTP_200_OK, response_model=Message)
+@router.post('/{order_id}/cancel', status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_order(order_id: int, user: CurrentUserDep, db: SessionDep):
     order = await OrderCRUD.get(order_id, db)
     if order.user_id != user.id:
         raise NotEnoughRightsError("User is not the order owner")
+
+    # TODO: add order status constraints (e.g. delivered order cannot be cancelled)
+    product_ids = list(map(lambda i: i.product_id, order.items))
+    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
+                                                                              for_update=True,
+                                                                              db=db))}
+    for item in order.items:
+        products[item.product_id].quantity += item.quantity
+
     order.status = OrderStatus.CANCELLED
-    return Message(message="The order cancelled")
 
 
 @router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message,
