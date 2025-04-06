@@ -3,11 +3,10 @@ from fastapi import APIRouter, status
 from src.crud import CategoryCRUD, ProductCRUD
 from src.db.models import Category
 from src.permissions import AdminRole
-from src.schemas.category import CategoryIn
+from src.schemas.category import CategoryIn, CategoryOut
 from src.schemas.message import Message
 from src.deps import SessionDep
-from src.custom_exceptions import ResourceAlreadyExistsError, ResourceDoesNotExistError
-from src.schemas.product import ProductOut
+from src.custom_exceptions import ResourceAlreadyExistsError
 
 router = APIRouter(
     prefix='/categories',
@@ -15,36 +14,24 @@ router = APIRouter(
 )
 
 
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message,
-             dependencies=[AdminRole])
+@router.post('', status_code=status.HTTP_201_CREATED, response_model=CategoryOut, dependencies=[AdminRole])
 async def create_category(category: CategoryIn, db: SessionDep):
-    if await CategoryCRUD.get(category.name, db):
-        raise ResourceAlreadyExistsError("Category with the given name already exists")
-    await CategoryCRUD.create(Category(**category.model_dump()), db=db)
-    return Message(message=f"Category {category.name} has been successfully created")
+    return await CategoryCRUD.create(Category(**category.model_dump()), db=db)
 
 
-@router.delete('/{category_name}', status_code=status.HTTP_200_OK, response_model=Message,
-               dependencies=[AdminRole])
-async def delete_category(category_name: str, db: SessionDep):
-    await CategoryCRUD.delete(category_name, db)
-    return Message(message=f"Category {category_name} has been successfully deleted")
+@router.delete('/{category_id}', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
+async def delete_category(category_id: str, db: SessionDep):
+    await CategoryCRUD.delete(category_id, db)
 
 
-@router.post('/{category_name}/products/{product_id}', status_code=status.HTTP_200_OK, response_model=Message,
-             dependencies=[AdminRole])
-async def link_category_to_product(category_name: str, product_id: int, db: SessionDep):
-    if (category := await CategoryCRUD.get(category_name, db)) is None:
-        raise ResourceDoesNotExistError("Category with the given name does not exist")
-    if (product := await ProductCRUD.get(product_id, db)) is None:
-        raise ResourceDoesNotExistError("Product with the given id does not exist")
-    if category in product.categories:
-        raise ResourceAlreadyExistsError(f"Product is already associated with the {category_name} category")
-    category.products.append(product)
-    return Message(message=f"Category {category_name} has been successfully linked to product with id {product_id}")
+@router.post('/{category_id}/products/{product_id}', status_code=status.HTTP_201_CREATED, dependencies=[AdminRole])
+async def link_category_to_product(category_id: int, product_id: int, db: SessionDep):
+    category = await CategoryCRUD.get(category_id, db)
+    product = await ProductCRUD.get(product_id, db)
 
+    if category in await product.awaitable_attrs.categories:
+        raise ResourceAlreadyExistsError(f"Product is already associated with the {category_id} category")
 
-@router.get('/{category_name}/products', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
-async def get_category_products(category_name: str, db: SessionDep):
-    category = await CategoryCRUD.get(category_name, db)
-    return category.products
+    product.categories.append(category)
+
+    return Message(message=f"Category {category_id} has been successfully linked to product with id {product_id}")

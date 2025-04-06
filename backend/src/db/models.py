@@ -107,6 +107,10 @@ class Product(Base):
 
     reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
 
+    categories: Mapped[list["Category"]] = relationship('Category',
+                                                        lazy='select',
+                                                        secondary=product_category_association)
+
     # TODO: Optimize
     @hybrid_property
     def rating(self):

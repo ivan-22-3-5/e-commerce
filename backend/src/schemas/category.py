@@ -10,3 +10,8 @@ class CategoryIn(BaseModel):
     @classmethod
     def to_lower_case(cls, v) -> str:
         return v.lower()
+
+
+class CategoryOut(BaseModel):
+    id: int
+    name: str
