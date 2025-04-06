@@ -7,7 +7,6 @@ from src.db import models
 class ReviewCRUD(Creatable, Retrievable, Deletable):
     model = models.Review
     key = models.Review.id
-    not_found_message = "Review with the given id does not exist"
 
     @classmethod
     async def get_by_user(cls, user_id: int, db: AsyncSession) -> list[models.Review]:

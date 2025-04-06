@@ -9,7 +9,6 @@ from src.schemas.filtration import PaginationParams
 class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
     model = models.Product
     key = models.Product.id
-    not_found_message = "Product with the given id does not exist"
 
     @classmethod
     async def get_all(cls, ids: list[int] = None, *,
