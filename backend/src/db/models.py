@@ -15,7 +15,7 @@ from src.db.db import Base
 product_category_association = Table(
     'product_category_association', Base.metadata,
     Column('product_id', Integer, ForeignKey('products.id'), primary_key=True),
-    Column('category_name', String(rules.MAX_CATEGORY_NAME_LENGTH), ForeignKey('categories.name'), primary_key=True)
+    Column('category_id', Integer, ForeignKey('categories.id'), primary_key=True)
 )
 
 
@@ -119,13 +119,8 @@ class Product(Base):
 
 class Category(Base):
     __tablename__ = 'categories'
-    name: Mapped[str] = mapped_column(String(rules.MAX_CATEGORY_NAME_LENGTH), primary_key=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
-                                                 default=lambda: datetime.now(UTC).replace(tzinfo=None))
-
-    products: Mapped[list["Product"]] = relationship('Product',
-                                                     lazy="selectin",
-                                                     secondary=product_category_association)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(rules.MAX_CATEGORY_NAME_LENGTH), unique=True)
 
 
 class Review(Base):
