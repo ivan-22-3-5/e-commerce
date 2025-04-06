@@ -10,7 +10,7 @@ from src.deps import CurrentUserDep, SessionDep
 from src.custom_exceptions import (
     ResourceDoesNotExistError,
     NotEnoughRightsError,
-    InsufficientStockError,
+    InsufficientStockError, InvalidOrderStatusError,
 )
 
 router = APIRouter(
@@ -49,7 +49,10 @@ async def cancel_order(order_id: int, user: CurrentUserDep, db: SessionDep):
     if order.user_id != user.id:
         raise NotEnoughRightsError("User is not the order owner")
 
-    # TODO: add order status constraints (e.g. delivered order cannot be cancelled)
+    # TODO: reconsider order cancellation behavior for different statuses
+    if order.status != OrderStatus.PENDING:
+        raise InvalidOrderStatusError("Order cannot be cancelled")
+
     product_ids = list(map(lambda i: i.product_id, order.items))
     products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
                                                                               for_update=True,
