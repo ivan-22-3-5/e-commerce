@@ -64,7 +64,6 @@ async def google_callback(res: Response, google_user: GoogleUserInfoDep, db: Ses
     new_user = await UserCRUD.create(User(
         identity_provider_id=google_user.id,
         email=google_user.email,
-        is_email_verified=google_user.email_verified,
         password=None,
         name=google_user.name  # TODO: check if within length bounds
     ), db=db)
