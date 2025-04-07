@@ -9,8 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD, UserCRUD
-from src.custom_exceptions import InvalidCredentialsError, InvalidTokenError, ResourceDoesNotExistError, \
-    ResourceAlreadyExistsError, InvalidConfirmationCodeError
+from src.custom_exceptions import (
+    InvalidCredentialsError,
+    InvalidTokenError,
+    ResourceDoesNotExistError,
+    ResourceAlreadyExistsError,
+    InvalidConfirmationCodeError,
+    EmailNotConfirmedError
+)
 from src.db.models import RefreshToken, RecoveryToken, User
 from src.deps import TokenDep, SessionDep, GoogleUserInfoDep, RedisClientDep
 from src.schemas.message import Message
@@ -61,6 +67,9 @@ async def google_callback(res: Response, google_user: GoogleUserInfoDep, db: Ses
         raise ResourceAlreadyExistsError("Email already registered")
 
     # new user handling
+    if google_user.email_verified is False:
+        raise EmailNotConfirmedError("Cannot register user with unverified email.")
+
     new_user = await UserCRUD.create(User(
         identity_provider_id=google_user.id,
         email=google_user.email,

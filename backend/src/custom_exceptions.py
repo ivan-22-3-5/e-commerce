@@ -57,3 +57,7 @@ class InsufficientStockError(PetStoreApiError):
 
 class InvalidOrderStatusError(PetStoreApiError):
     pass
+
+
+class EmailNotConfirmedError(PetStoreApiError):
+    pass

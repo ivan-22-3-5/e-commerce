@@ -24,7 +24,8 @@ from src.custom_exceptions import (
     LimitExceededError,
     InvalidConfirmationCodeError,
     InsufficientStockError,
-    InvalidOrderStatusError
+    InvalidOrderStatusError,
+    EmailNotConfirmedError
 )
 
 
@@ -86,6 +87,7 @@ exception_handlers = [
     (InvalidConfirmationCodeError, status.HTTP_401_UNAUTHORIZED, "Invalid confirmation code"),
     (InsufficientStockError, status.HTTP_409_CONFLICT, "Out of stock"),
     (InvalidOrderStatusError, status.HTTP_409_CONFLICT, "Invalid order status"),
+    (EmailNotConfirmedError, status.HTTP_403_FORBIDDEN, "Email not confirmed"),
 ]
 
 for exc, code, message in exception_handlers:
