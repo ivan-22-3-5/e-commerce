@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import settings
+from src.config import settings, rules
 from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD, UserCRUD
 from src.custom_exceptions import (
     InvalidCredentialsError,
@@ -74,7 +74,7 @@ async def google_callback(res: Response, google_user: GoogleUserInfoDep, db: Ses
         identity_provider_id=google_user.id,
         email=google_user.email,
         password=None,
-        name=google_user.name  # TODO: check if within length bounds
+        name=google_user.name[:rules.MAX_USER_NAME_LENGTH]
     ), db=db)
 
     return await handle_user_tokens(new_user.id, res, db)
