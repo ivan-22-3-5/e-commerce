@@ -13,7 +13,8 @@ erDiagram
     }
     
     CATEGORY {
-        string name PK
+        int id PK
+        string name
     }
 
     PRODUCT }o--o{ CATEGORY: ""
