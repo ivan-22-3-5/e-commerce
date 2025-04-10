@@ -12,15 +12,15 @@ erDiagram
         list[string] images
     }
 
-				USER {
-				    int id PK
-				    string identity_provider_id
+    USER {
+        int id PK
+        string identity_provider_id
         string email 
         string password 
         string name
         bool is_admin 
         timestamp created_at
-				}
+    }
     
     CATEGORY {
         int id PK
