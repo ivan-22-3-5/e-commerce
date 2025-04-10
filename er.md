@@ -27,5 +27,11 @@ erDiagram
         string name
     }
 
+    CartItem {
+        int user_id PK
+        int product_id FK
+        int quantity 
+    }
+
     PRODUCT }o--o{ CATEGORY: ""
 ```
