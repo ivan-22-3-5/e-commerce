@@ -27,7 +27,7 @@ erDiagram
         string name
     }
 
-    CartItem {
+    CARTITEM {
         int user_id PK
         int product_id FK
         int quantity 
