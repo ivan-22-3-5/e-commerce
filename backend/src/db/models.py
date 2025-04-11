@@ -55,6 +55,7 @@ class ItemBase(Base):
     def product(cls) -> Mapped["Product"]:
         return relationship('Product', lazy="selectin", uselist=False)
 
+#TODO: replace this hybrid property with attribute 
     @hybrid_property
     def total_price(self):
         return self.product.final_price * self.quantity
