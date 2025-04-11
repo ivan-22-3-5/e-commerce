@@ -33,5 +33,13 @@ erDiagram
         int quantity 
     }
 
+    ORDER {
+        int id PK
+        string status
+        int user_id FK
+        bool is_paid
+        timestamp created_at
+    }
+
     PRODUCT }o--o{ CATEGORY: ""
 ```
