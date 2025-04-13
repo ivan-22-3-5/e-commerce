@@ -112,7 +112,7 @@ class Product(Base):
                                                         lazy='select',
                                                         secondary=product_category_association)
 
-    # TODO: Optimize
+    # TODO: Shift computation from read time to write time 
     @hybrid_property
     def rating(self):
         return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1) if self.reviews else 0
