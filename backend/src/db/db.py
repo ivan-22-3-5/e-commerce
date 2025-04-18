@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
-
 from src.config import settings
 
 engine = create_async_engine(settings.POSTGRESQL_DB_URL)

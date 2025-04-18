@@ -7,8 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.config import settings
-from src.db import models
 from src.db.db import engine
+from src.db.db_init import init_db
 from src.routers import auth, users, orders, products, categories, reviews, cart
 from src.custom_exceptions import (
     PetStoreApiError,
@@ -29,14 +29,9 @@ from src.custom_exceptions import (
 )
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    await init_db(engine)
     yield
 
 
