@@ -55,6 +55,7 @@ class ItemBase(Base):
     def product(cls) -> Mapped["Product"]:
         return relationship('Product', lazy="selectin", uselist=False)
 
+#TODO: replace this hybrid property with attribute 
     @hybrid_property
     def total_price(self):
         return self.product.final_price * self.quantity
@@ -111,7 +112,7 @@ class Product(Base):
                                                         lazy='select',
                                                         secondary=product_category_association)
 
-    # TODO: Optimize
+    # TODO: Shift computation from read time to write time 
     @hybrid_property
     def rating(self):
         return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1) if self.reviews else 0
