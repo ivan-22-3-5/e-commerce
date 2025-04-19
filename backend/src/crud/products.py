@@ -26,7 +26,6 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
     @classmethod
     async def search(cls, query: str, db: AsyncSession) -> list[models.Product]:
         ts_query = func.plainto_tsquery('english', query)
-        logger.info(f"ts_query: {ts_query}")
         tsvector = func.to_tsvector('english', models.Product.title + ' ' + models.Product.description)
 
         stmt = select(models.Product).where(
