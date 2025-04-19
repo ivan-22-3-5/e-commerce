@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from src.db import models
 
 
+# TODO: add support for ukrainian language
 async def create_product_fulltext_index(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.execute(text("""
@@ -17,7 +18,7 @@ async def create_product_fulltext_index(engine: AsyncEngine):
                 ) THEN
                     CREATE INDEX idx_product_tsv
                     ON products
-                    USING gin(to_tsvector('ukrainian', title || ' ' || description));
+                    USING gin(to_tsvector('english', title || ' ' || description));
                 END IF;
             END
             $$;
