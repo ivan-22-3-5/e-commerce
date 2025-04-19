@@ -26,7 +26,7 @@ async def get_products(db: SessionDep, pagination: PaginationParams = Depends())
 
 @router.get('/search', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
 async def search_products(q: str, db: SessionDep):
-    return await ProductCRUD.search(q, db)
+    return await ProductCRUD.search(q, db=db)
 
 
 @router.get('/all', status_code=status.HTTP_200_OK, response_model=list[ProductOut], dependencies=[AdminRole])
