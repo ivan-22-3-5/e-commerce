@@ -24,6 +24,11 @@ async def get_products(db: SessionDep, pagination: PaginationParams = Depends())
     return await ProductCRUD.get_all(db=db, pagination=pagination, is_active=True)
 
 
+@router.get('/search', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
+async def search_products(q: str, db: SessionDep):
+    return await ProductCRUD.search(q, db)
+
+
 @router.get('/all', status_code=status.HTTP_200_OK, response_model=list[ProductOut], dependencies=[AdminRole])
 async def get_products_admin(db: SessionDep, pagination: PaginationParams = Depends(), is_active: bool = None):
     return await ProductCRUD.get_all(db=db, pagination=pagination, is_active=is_active)
