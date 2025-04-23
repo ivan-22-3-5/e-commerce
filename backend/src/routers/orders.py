@@ -5,7 +5,7 @@ from src.custom_types import OrderStatus
 from src.db.models import Order
 from src.permissions import AdminRole
 from src.schemas.message import Message
-from src.schemas.order import OrderIn, OrderOut
+from src.schemas.order import OrderOut
 from src.deps import CurrentUserDep, SessionDep
 from src.custom_exceptions import (
     ResourceDoesNotExistError,
@@ -39,10 +39,14 @@ async def create_order(user: CurrentUserDep, db: SessionDep):
 
         product.quantity -= item.quantity
 
-    return await OrderCRUD.create(Order(
+    order = await OrderCRUD.create(Order(
         items=cart.items,
         user_id=user.id
     ), db)
+
+    await CartCRUD.clear(user.id, db)
+
+    return order
 
 
 @router.post('/{order_id}/cancel', status_code=status.HTTP_204_NO_CONTENT)
