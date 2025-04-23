@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from src.crud import OrderCRUD, ProductCRUD
+from src.crud import OrderCRUD, ProductCRUD, CartCRUD
 from src.custom_types import OrderStatus
 from src.db.models import Order
 from src.permissions import AdminRole
@@ -20,13 +20,15 @@ router = APIRouter(
 
 
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=OrderOut)
-async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
-    product_ids = list(map(lambda i: i.product_id, order.items))
+async def create_order(user: CurrentUserDep, db: SessionDep):
+    cart = await CartCRUD.get_cart(user.id, db)
+
+    product_ids = list(map(lambda i: i.product_id, cart.items))
     products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
                                                                               for_update=True,
                                                                               db=db))}
 
-    for item in order.items:
+    for item in cart.items:
         product = products.get(item.product_id, None)
 
         if product is None:
@@ -38,7 +40,7 @@ async def create_order(user: CurrentUserDep, order: OrderIn, db: SessionDep):
         product.quantity -= item.quantity
 
     return await OrderCRUD.create(Order(
-        **order.model_dump(),
+        items=cart.items,
         user_id=user.id
     ), db)
 

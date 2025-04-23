@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship
 from src.config import rules
 from src.custom_types import OrderStatus
 from src.db.db import Base
+from src.schemas.item import Item
 
 product_category_association = Table(
     'product_category_association', Base.metadata,
@@ -55,20 +56,20 @@ class ItemBase(Base):
     def product(cls) -> Mapped["Product"]:
         return relationship('Product', lazy="selectin", uselist=False)
 
-#TODO: replace this hybrid property with attribute 
-    @hybrid_property
-    def total_price(self):
-        return self.product.final_price * self.quantity
-
 
 class CartItem(ItemBase):
     __tablename__ = 'cart_items'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
 
+    @hybrid_property
+    def total_price(self):
+        return self.product.final_price * self.quantity
+
 
 class OrderItem(ItemBase):
     __tablename__ = 'order_items'
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'), primary_key=True)
+    total_price: Mapped[float]
 
 
 class Order(Base):
@@ -86,10 +87,10 @@ class Order(Base):
     def total_price(self):
         return sum(item.total_price for item in self.items)
 
-    def __init__(self, user_id: int, items: list[dict[str, int]]):
+    def __init__(self, user_id: int, items: list[Item]):
         super().__init__()
         self.user_id = user_id
-        self.items = [OrderItem(**item) for item in items]
+        self.items = [OrderItem(**item.model_dump()) for item in items]
 
 
 class Product(Base):
