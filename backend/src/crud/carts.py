@@ -6,20 +6,20 @@ from src.crud.products import ProductCRUD
 from src.custom_exceptions import ResourceDoesNotExistError
 from src.db import models
 from src.db.models import CartItem
-from src.schemas.cart import CartOut
-from src.schemas.item import ItemIn, ItemOut
+from src.schemas.cart import Cart
+from src.schemas.item import ItemIn, Item
 
 
 class CartCRUD(_CRUDBase):
     model = models.CartItem
 
     @classmethod
-    async def get_cart(cls, user_id: int, db: AsyncSession) -> CartOut:
+    async def get_cart(cls, user_id: int, db: AsyncSession) -> Cart:
         items = await cls._get_all(cls.model.user_id == user_id, db)
-        return CartOut(
-            items=[ItemOut(product_id=item.product_id,
-                           quantity=item.quantity,
-                           total_price=item.total_price) for item in items],
+        return Cart(
+            items=[Item(product_id=item.product_id,
+                        quantity=item.quantity,
+                        total_price=item.total_price) for item in items],
             total_price=sum(item.total_price for item in items)
         )
 

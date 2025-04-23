@@ -4,8 +4,12 @@ from fastapi import APIRouter, status, Depends, UploadFile
 
 from src.config import settings, rules
 from src.crud import ProductCRUD, ReviewCRUD
-from src.custom_exceptions import FileTooLargeError, NotSupportedFileTypeError, LimitExceededError, \
+from src.custom_exceptions import (
+    FileTooLargeError,
+    NotSupportedFileTypeError,
+    LimitExceededError,
     ResourceDoesNotExistError
+)
 from src.db.models import Product
 from src.deps import SessionDep, FileStorageDep
 from src.permissions import AdminRole
