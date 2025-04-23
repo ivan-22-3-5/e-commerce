@@ -42,4 +42,5 @@ erDiagram
     }
 
     PRODUCT }o--o{ CATEGORY: ""
+    ORDER }o--|| USER: ""
 ```
