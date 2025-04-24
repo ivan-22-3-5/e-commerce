@@ -15,7 +15,6 @@ from src.schemas.filtration import PaginationParams
 class _CRUDBase:
     model = None
     key = None
-    not_found_message = None
 
     @classmethod
     async def _get_one(cls, criteria, db: AsyncSession):
@@ -57,6 +56,7 @@ class Creatable(_CRUDBase):
                 raise ResourceDoesNotExistError(_craft_doesnt_exist_error_message(cls.model, error_message))
             else:
                 logger.error(f"Unexpected IntegrityError: {e}")
+                return None
 
 
 class Retrievable(_CRUDBase):
@@ -83,6 +83,7 @@ class Updatable(_CRUDBase):
             await db.flush()
             await db.refresh(entity_to_update)
             return entity_to_update
+        return None
 
 
 class Deletable(_CRUDBase):
