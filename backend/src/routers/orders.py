@@ -1,9 +1,10 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from src.crud import OrderCRUD, ProductCRUD, CartCRUD
 from src.custom_types import OrderStatus
 from src.db.models import Order
 from src.permissions import AdminRole
+from src.schemas.filtration import PaginationParams, OrderFilter
 from src.schemas.message import Message
 from src.schemas.order import OrderOut
 from src.deps import CurrentUserDep, SessionDep
@@ -75,3 +76,11 @@ async def change_order_status(order_id: int, new_status: OrderStatus, db: Sessio
     order = await OrderCRUD.get(order_id, db)
     order.status = new_status
     return Message(message=f"The order status updated to {new_status.value}")
+
+
+@router.get('/', response_model=list[OrderOut], status_code=status.HTTP_200_OK,
+            dependencies=[AdminRole])
+async def get_orders(db: SessionDep,
+                     filter: OrderFilter = Depends(),
+                     pagination: PaginationParams = Depends()):
+    return await OrderCRUD.get_all(db=db, filter=filter, pagination=pagination)
