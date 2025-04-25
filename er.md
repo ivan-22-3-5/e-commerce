@@ -40,7 +40,19 @@ erDiagram
         bool is_paid
         timestamp created_at
     }
+    
+    REFRESH_TOKEN {
+        int user_id PK, FK
+        string token
+    }
+    
+    RECOVERY_TOKEN {
+        int user_id PK, FK
+        string token
+    }
 
     PRODUCT }o--o{ CATEGORY: ""
     ORDER }o--|| USER: ""
+    USER ||--o| REFRESH_TOKEN: ""
+    USER ||--o| RECOVERY_TOKEN: ""
 ```
