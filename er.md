@@ -50,9 +50,17 @@ erDiagram
         int user_id PK, FK
         string token
     }
+    
+    ORDERITEM {
+        int order_id FK
+        money total_price
+        int product_id FK
+        int quantity
+    }
 
     PRODUCT }o--o{ CATEGORY: ""
     ORDER }o--|| USER: ""
+    ORDER ||--|{ ORDERITEM: ""
     USER ||--o| REFRESH_TOKEN: ""
     USER ||--o| RECOVERY_TOKEN: ""
 ```
