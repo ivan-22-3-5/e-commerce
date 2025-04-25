@@ -61,6 +61,8 @@ erDiagram
     PRODUCT }o--o{ CATEGORY: ""
     ORDER }o--|| USER: ""
     ORDER ||--|{ ORDERITEM: ""
+    ORDERITEM }o--|| PRODUCT: ""
     USER ||--o| REFRESH_TOKEN: ""
     USER ||--o| RECOVERY_TOKEN: ""
+    USER ||--o{ CARTITEM: ""
 ```
