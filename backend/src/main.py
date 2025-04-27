@@ -25,7 +25,7 @@ from src.custom_exceptions import (
     InvalidConfirmationCodeError,
     InsufficientStockError,
     InvalidOrderStatusError,
-    EmailNotConfirmedError
+    EmailNotConfirmedError, DependentEntityExistsError
 )
 
 
@@ -83,6 +83,7 @@ exception_handlers = [
     (InsufficientStockError, status.HTTP_409_CONFLICT, "Out of stock"),
     (InvalidOrderStatusError, status.HTTP_409_CONFLICT, "Invalid order status"),
     (EmailNotConfirmedError, status.HTTP_403_FORBIDDEN, "Email not confirmed"),
+    (DependentEntityExistsError, status.HTTP_409_CONFLICT, "Dependent entity exists"),
 ]
 
 for exc, code, message in exception_handlers:

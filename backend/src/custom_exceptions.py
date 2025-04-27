@@ -61,3 +61,7 @@ class InvalidOrderStatusError(PetStoreApiError):
 
 class EmailNotConfirmedError(PetStoreApiError):
     pass
+
+
+class DependentEntityExistsError(PetStoreApiError):
+    pass
