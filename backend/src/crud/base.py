@@ -102,7 +102,8 @@ class Deletable(_CRUDBase):
                 error_message = str(e.orig)
 
                 if "ForeignKeyViolationError" in error_message:
-                    raise DependentEntityExistsError(_craft_dependent_entity_exist_error_message(cls.model, error_message))
+                    raise DependentEntityExistsError(
+                        _craft_dependent_entity_exist_error_message(cls.model, error_message))
                 else:
                     logger.error(f"Unexpected IntegrityError: {e}")
 
@@ -132,13 +133,13 @@ def _craft_doesnt_exist_error_message(model: Base, raw_sql_error_msg: str) -> st
 def _craft_dependent_entity_exist_error_message(model: Base, raw_sql_error_msg: str) -> str:
     err_msg = f"There is some other entity that depends on {model.__name__}"
 
-    logger.info(raw_sql_error_msg)
-
-    # if (
-    #         (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg))
-    #         and
-    #         (table_match := re.search(r"not present in table \"(\w+)\"", raw_sql_error_msg))
-    # ):
-    #     err_msg = f"There are no {table_match.group(1)} with the {key_match.group(1)}={key_match.group(2)}"
+    if (
+            (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg))
+            and
+            (table_match := re.search(r"is still referenced from table \"(\w+)\"", raw_sql_error_msg))
+    ):
+        err_msg = (f"There is some other entity in relation {table_match.group(1)} "
+                   f"that depends on {model.__name__} "
+                   f"with the {key_match.group(1)}={key_match.group(2)}")
 
     return err_msg
