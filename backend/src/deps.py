@@ -13,6 +13,7 @@ from src.crud.users import UserCRUD
 from src.db import models
 from src.db.db import get_db
 from src.file_storage import FileStorage, local_file_storage
+from src.logger import logger
 from src.schemas.user import GoogleUserInfo
 from src.utils import get_user_id_from_jwt
 
@@ -45,8 +46,9 @@ async def get_access_token(code: str, http: HTTPClientDep) -> str:
                          },
                          headers={"Content-Type": "application/x-www-form-urlencoded"}) as response:
         if response.status != 200:
-            ...
-            # TODO: handle unsuccessful status
+            logger.error(
+                f"Failed to get access token from Google: {await response.text()}"
+            )
 
         return (await response.json()).get("access_token")
 
@@ -58,8 +60,9 @@ async def get_google_user_info(access_token: GoogleAccessTokenDep, http: HTTPCli
     async with http.post(settings.GOOGLE_USER_INFO_URL,
                          headers={"Authorization": f"Bearer {access_token}"}) as response:
         if response.status != 200:
-            ...
-            # TODO: handle unsuccessful status
+            logger.error(
+                f"Failed to get user info from Google: {await response.text()}"
+            )
 
         return GoogleUserInfo(**(await response.json()))
 
