@@ -69,7 +69,7 @@ class CartItem(ItemBase):
 class OrderItem(ItemBase):
     __tablename__ = 'order_items'
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'), primary_key=True)
-    total_price: Mapped[float]
+    total_price: Mapped[int]
 
 
 class Order(Base):
@@ -99,7 +99,7 @@ class Product(Base):
     title: Mapped[str] = mapped_column(String(rules.MAX_PRODUCT_TITLE_LENGTH))
     description: Mapped[str] = mapped_column(String(rules.MAX_PRODUCT_DESCRIPTION_LENGTH))
     quantity: Mapped[int]
-    full_price: Mapped[float]
+    full_price: Mapped[int]
     discount: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
@@ -120,7 +120,7 @@ class Product(Base):
 
     @hybrid_property
     def final_price(self):
-        return round(self.full_price * (1 - self.discount / 100), 2)
+        return int(self.full_price * self.discount / 100)
 
 
 class Category(Base):

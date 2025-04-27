@@ -1,10 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class Item(BaseModel):
     product_id: int
     quantity: int
-    total_price: float
+    total_price: int
 
 
 class ItemIn(BaseModel):
@@ -15,4 +15,8 @@ class ItemIn(BaseModel):
 class ItemOut(BaseModel):
     product_id: int
     quantity: int
-    total_price: float
+    total_price: int
+
+    @field_serializer('total_price')
+    def serialize_total_price(self, value) -> float:
+        return round(value / 100, 2)
