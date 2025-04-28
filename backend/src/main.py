@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from src.config import settings
 from src.db.db import engine
 from src.db.db_init import init_db
-from src.routers import auth, users, orders, products, categories, reviews, cart
+from src.routers import auth, users, orders, products, categories, reviews, cart, payments
 from src.custom_exceptions import (
     PetStoreApiError,
     ResourceDoesNotExistError,
@@ -54,6 +54,7 @@ app.include_router(products.router)
 app.include_router(categories.router)
 app.include_router(reviews.router)
 app.include_router(cart.router)
+app.include_router(payments.router)
 
 os.makedirs(settings.FILES_DIR, exist_ok=True)
 

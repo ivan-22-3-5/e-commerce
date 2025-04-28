@@ -1,5 +1,6 @@
 import stripe
 from fastapi import APIRouter, status, Request
+from fastapi.responses import RedirectResponse
 
 from src.config import settings
 from src.crud import OrderCRUD, PaymentCRUD
@@ -7,13 +8,30 @@ from src.db.models import Payment
 from src.deps import SessionDep
 from src.custom_exceptions import (
     InvalidPayloadError,
-    InvalidSignatureError
+    InvalidSignatureError, PaymentGatewayError
 )
+from src.logger import logger
+from src.payments import create_checkout_session
 
 router = APIRouter(
-    prefix='/stripe',
-    tags=['stripe']
+    prefix='/payments',
+    tags=['Payments']
 )
+
+
+@router.get('/{order_id}/pay', status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+async def pay(order_id: int, db: SessionDep):
+    order = await OrderCRUD.get(order_id, db)
+
+    try:
+        checkout_session = create_checkout_session(order)
+    except stripe.error.StripeError as e:
+        logger.error(f"Failed to create checkout session: {e}")
+        raise PaymentGatewayError("Failed to create checkout session")
+
+    return RedirectResponse(
+        url=checkout_session.url
+    )
 
 
 @router.post('/webhook', status_code=status.HTTP_200_OK)

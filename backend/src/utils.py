@@ -4,14 +4,12 @@ from datetime import datetime, timedelta, UTC
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import stripe
 from jinja2 import Environment, FileSystemLoader
 from passlib.context import CryptContext
 from jose import JWTError, ExpiredSignatureError, jwt
 
 from src.config import settings, rules
 from src.custom_exceptions import InvalidTokenError
-from src.db import models
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -43,25 +41,6 @@ def get_user_id_from_jwt(token: str) -> int:
     except JWTError:
         raise InvalidTokenError("Could not validate the token", {"WWW-Authenticate": "Bearer {}"})
     return int(user_id)
-
-
-def create_payment_intent(order: models.Order):
-    amount = int(order.total_price * 100)
-    automatic_payment_methods = {
-        "enabled": True,
-        "allow_redirects": 'never'
-    }
-    metadata = {
-        "order_id": str(order.id),
-        "user_id": str(order.user_id)
-    }
-    return stripe.PaymentIntent.create(
-        amount=amount,
-        currency="usd",
-        automatic_payment_methods=automatic_payment_methods,
-        metadata=metadata,
-        api_key=settings.STRIPE_SECRET_KEY
-    )
 
 
 def send_email(email_address: str, subject: str, template_name: str, **kwargs):
