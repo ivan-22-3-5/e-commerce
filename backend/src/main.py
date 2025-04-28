@@ -25,7 +25,9 @@ from src.custom_exceptions import (
     InvalidConfirmationCodeError,
     InsufficientStockError,
     InvalidOrderStatusError,
-    EmailNotConfirmedError, DependentEntityExistsError
+    EmailNotConfirmedError,
+    DependentEntityExistsError,
+    PaymentGatewayError
 )
 
 
@@ -84,6 +86,7 @@ exception_handlers = [
     (InvalidOrderStatusError, status.HTTP_409_CONFLICT, "Invalid order status"),
     (EmailNotConfirmedError, status.HTTP_403_FORBIDDEN, "Email not confirmed"),
     (DependentEntityExistsError, status.HTTP_409_CONFLICT, "Dependent entity exists"),
+    (PaymentGatewayError, status.HTTP_500_INTERNAL_SERVER_ERROR, "Payment gateway error"),
 ]
 
 for exc, code, message in exception_handlers:

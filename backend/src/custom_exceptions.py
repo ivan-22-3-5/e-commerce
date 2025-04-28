@@ -65,3 +65,7 @@ class EmailNotConfirmedError(PetStoreApiError):
 
 class DependentEntityExistsError(PetStoreApiError):
     pass
+
+
+class PaymentGatewayError(PetStoreApiError):
+    pass
