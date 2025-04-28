@@ -120,7 +120,7 @@ class Product(Base):
 
     @hybrid_property
     def final_price(self):
-        return int(self.full_price * self.discount / 100)
+        return int(self.full_price * (1 - self.discount / 100))
 
 
 class Category(Base):
