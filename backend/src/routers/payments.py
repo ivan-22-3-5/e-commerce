@@ -6,10 +6,8 @@ from src.config import settings
 from src.crud import OrderCRUD, PaymentCRUD
 from src.db.models import Payment
 from src.deps import SessionDep
-from src.custom_exceptions import (
-    InvalidPayloadError,
-    InvalidSignatureError, PaymentGatewayError
-)
+from src.custom_exceptions import PaymentGatewayError
+
 from src.logger import logger
 from src.payments import create_checkout_session
 
@@ -43,9 +41,9 @@ async def webhook(req: Request, db: SessionDep):
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except ValueError as e:
-        raise InvalidPayloadError("Invalid payload" + str(e))
+        logger.error("Invalid payload" + str(e))
     except stripe.error.SignatureVerificationError as e:
-        raise InvalidSignatureError("Invalid signature" + str(e))
+        logger.error("Invalid signature" + str(e))
     await handle_event(event, db)
 
 

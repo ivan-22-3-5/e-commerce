@@ -31,14 +31,6 @@ class InvalidConfirmationCodeError(PetStoreApiError):
     pass
 
 
-class InvalidPayloadError(PetStoreApiError):
-    pass
-
-
-class InvalidSignatureError(PetStoreApiError):
-    pass
-
-
 class FileTooLargeError(PetStoreApiError):
     pass
 
