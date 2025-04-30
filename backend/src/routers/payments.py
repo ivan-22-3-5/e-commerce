@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, Request
 from fastapi.responses import RedirectResponse
 
 from src.config import settings
-from src.crud import OrderCRUD
+from src.crud import OrderCRUD, ProductCRUD
 from src.deps import SessionDep
 from src.custom_exceptions import PaymentGatewayError
 
@@ -33,17 +33,17 @@ async def pay(order_id: int, db: SessionDep):
 
 @router.post('/webhook', status_code=status.HTTP_200_OK)
 async def webhook(req: Request, db: SessionDep):
-    payload = await req.body()
-    sig_header = req.headers.get('stripe-signature')
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
+        await handle_event(
+            stripe.Webhook.construct_event(
+                payload=(await req.body()),
+                sig_header=req.headers.get('stripe-signature'),
+                secret=settings.STRIPE_WEBHOOK_SECRET
+            ), db)
     except ValueError as e:
         logger.error("Invalid payload" + str(e))
     except stripe.error.SignatureVerificationError as e:
         logger.error("Invalid signature" + str(e))
-    await handle_event(event, db)
 
 
 async def handle_event(event, db):
@@ -51,7 +51,7 @@ async def handle_event(event, db):
         case "checkout.session.completed":
             await handle_payment_succeeded(event, db)
         case "payment_intent.payment_failed":
-            await handle_payment_failed(event)
+            await handle_payment_failed(event, db)
 
 
 async def handle_payment_succeeded(event, db):
@@ -63,7 +63,15 @@ async def handle_payment_succeeded(event, db):
         order.is_paid = True
 
 
-async def handle_payment_failed(event):
+async def handle_payment_failed(event, db):
     intent = event.data.object
-    error_message = intent['last_payment_error']['message'] if intent.get('last_payment_error') else None
-    logger.info("Failed: ", intent['id'], error_message)
+    metadata = intent['metadata']
+    if order_id := metadata.get('order_id'):
+        order = await OrderCRUD.get(int(order_id), db)
+
+        product_ids = list(map(lambda i: i.product_id, order.items))
+        products = {product.id: product for product in (await ProductCRUD.get_all(product_ids, for_update=True, db=db))}
+        for item in order.items:
+            products[item.product_id].quantity += item.quantity
+
+        await OrderCRUD.delete(int(order_id), db)
