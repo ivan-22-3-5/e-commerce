@@ -27,6 +27,9 @@ def create_checkout_session(order: models.Order):
         currency="uah",
         mode="payment",
         metadata=metadata,
+        payment_intent_data={
+            "metadata": metadata
+        },
         success_url=settings.PAYMENT_SUCCESS_REDIRECT_URL,
         api_key=settings.STRIPE_SECRET_KEY
     )
