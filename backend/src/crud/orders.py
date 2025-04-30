@@ -1,12 +1,12 @@
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.crud.base import Retrievable, Creatable
+from src.crud.base import Retrievable, Creatable, Deletable
 from src.db import models
 from src.schemas.filtration import PaginationParams, OrderFilter
 
 
-class OrderCRUD(Creatable, Retrievable):
+class OrderCRUD(Creatable, Retrievable, Deletable):
     model = models.Order
     key = models.Order.id
 

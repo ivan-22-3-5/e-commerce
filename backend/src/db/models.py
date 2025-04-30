@@ -68,7 +68,7 @@ class CartItem(ItemBase):
 
 class OrderItem(ItemBase):
     __tablename__ = 'order_items'
-    order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'), primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey('orders.id', ondelete='CASCADE'), primary_key=True)
     total_price: Mapped[int]
 
 
