@@ -24,6 +24,9 @@ router = APIRouter(
 async def create_order(user: CurrentUserDep, db: SessionDep):
     cart = await CartCRUD.get_cart(user.id, db)
 
+    if len(cart.items) == 0:
+        raise ResourceDoesNotExistError("Cart is empty")
+
     product_ids = list(map(lambda i: i.product_id, cart.items))
     products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
                                                                               for_update=True,
