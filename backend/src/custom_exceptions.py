@@ -61,3 +61,7 @@ class DependentEntityExistsError(PetStoreApiError):
 
 class PaymentGatewayError(PetStoreApiError):
     pass
+
+
+class EmptyCartError(PetStoreApiError):
+    pass
