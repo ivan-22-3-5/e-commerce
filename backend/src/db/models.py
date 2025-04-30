@@ -81,7 +81,7 @@ class Order(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
 
-    items: Mapped[list["OrderItem"]] = relationship('OrderItem', lazy='selectin')
+    items: Mapped[list["OrderItem"]] = relationship('OrderItem', lazy='selectin', cascade="all, delete-orphan")
 
     @hybrid_property
     def total_price(self):
