@@ -14,6 +14,5 @@ COPY pyproject.toml ./
 RUN uv sync
 
 COPY src src
-COPY .env .
 
 CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
