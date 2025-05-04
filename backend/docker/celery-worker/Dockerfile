@@ -13,4 +13,4 @@ ENV PATH="/app/.venv/bin:/root/.local/bin/:$PATH"
 COPY pyproject.toml ./
 RUN uv sync
 
-COPY src src
+COPY src/celery_ src
