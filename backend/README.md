@@ -41,7 +41,7 @@ POSTGRES_PASSWORD – The password for the PostgreSQL user.
 
 STATIC_PATH – Path to the folder where static files (specifically images) are stored and served from.
 
-CELERY_BROKER_URL – The Redis connection URL used by Celery as the message broker (for task queuing).
+CELERY_BROKER_URL – The Redis connection URL used by Celery as the message broker (for task queuing).  
 CELERY_BACKEND_URL – The Redis connection URL used by Celery to store and retrieve task results.
 
 TOKEN_SECRET_KEY – A secret key used for signing JWT tokens.  
