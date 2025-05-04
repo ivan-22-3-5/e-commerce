@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 from pydantic_core.core_schema import ValidationInfo
 
 from src.config import settings, rules
@@ -13,15 +13,23 @@ class ProductIn(BaseModel):
     full_price: float = Field(ge=0)
     quantity: int = Field(gt=0, default=0)
 
+    @field_serializer('full_price')
+    def convert_price_to_int(self, v: float) -> int:
+        return int(v * 100)
+
 
 class ProductOut(BaseModel):
     id: int
     rating: float
-    final_price: float
+    final_price: int
     title: str
     description: str
-    full_price: float
+    full_price: int
     images: list[str]
+
+    @field_serializer('full_price', 'final_price')
+    def convert_price_to_float(self, v: int) -> float:
+        return round(v / 100, 2)
 
     @field_validator('images', mode='after')
     @classmethod
@@ -36,3 +44,7 @@ class ProductUpdate(ObjUpdate):
     discount: Optional[float] = Field(default=None, ge=0, le=100)
     is_active: Optional[bool] = Field(default=None)
     quantity: Optional[int] = Field(default=None, gt=0)
+
+    @field_serializer('full_price')
+    def convert_price_to_int(self, v: float) -> int:
+        return v and int(v * 100)
