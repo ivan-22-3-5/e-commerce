@@ -24,6 +24,7 @@ from src.schemas.new_password import NewPasswordIn
 from src.schemas.token import Token
 from src.schemas.user import UserIn, UserOut
 from src.utils import create_jwt_token, get_user_id_from_jwt, verify_password, generate_confirmation_code
+from src.celery_.tasks import send_password_recovery_email, send_confirmation_code_email
 
 router = APIRouter(
     prefix='/auth',
@@ -88,8 +89,8 @@ async def send_confirmation_code(email: EmailStr, db: SessionDep, redis: RedisCl
     await redis.set(f"confirmation_code:{email}",
                     confirmation_code,
                     ex=settings.CONFIRMATION_CODE_EXPIRATION_SECONDS)
-    # send_confirmation_code_email.delay(code=confirmation_code,
-    #                                    email_address=email)
+    send_confirmation_code_email.delay(code=confirmation_code,
+                                       email_address=email)
     return Message(message="Confirmation code sent")
 
 
@@ -138,9 +139,9 @@ async def recover_password(email: EmailStr, db: SessionDep):
                                       expires_in=timedelta(minutes=settings.RECOVERY_TOKEN_EXPIRATION_MINUTES))
     await RecoveryTokenCRUD.upsert(RecoveryToken(user_id=user.id,
                                                  token=recovery_token), db)
-    # send_password_recovery_email.delay(username=user.username,
-    #                                    link=settings.PASSWORD_RECOVERY_LINK + recovery_token,
-    #                                    email_address=email)
+    send_password_recovery_email.delay(username=user.username,
+                                       link=recovery_token,
+                                       email_address=email)
     return Message(message="Recovery email sent")
 
 

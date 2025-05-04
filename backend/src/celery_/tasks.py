@@ -1,9 +1,9 @@
 from celery import Celery
 
-from src.config import settings
-from src.utils import send_email
+from .config import celery_config
+from .utils import send_email
 
-celery = Celery("celery", broker=settings.CELERY_BROKER_URL, backend=settings.CELERY_BACKEND_URL)
+celery = Celery("celery", broker=celery_config.CELERY_BROKER_URL, backend=celery_config.CELERY_BACKEND_URL)
 
 
 @celery.task

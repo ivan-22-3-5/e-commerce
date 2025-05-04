@@ -1,10 +1,6 @@
 import random
-import smtplib
 from datetime import datetime, timedelta, UTC
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
-from jinja2 import Environment, FileSystemLoader
 from passlib.context import CryptContext
 from jose import JWTError, ExpiredSignatureError, jwt
 
@@ -41,24 +37,6 @@ def get_user_id_from_jwt(token: str) -> int:
     except JWTError:
         raise InvalidTokenError("Could not validate the token", {"WWW-Authenticate": "Bearer {}"})
     return int(user_id)
-
-
-def send_email(email_address: str, subject: str, template_name: str, **kwargs):
-    env = Environment(loader=FileSystemLoader('src/email_templates'))
-    template = env.get_template(template_name)
-    html_content = template.render(**kwargs)
-
-    msg = MIMEMultipart()
-    msg['From'] = settings.SMTP_MAIL
-    msg['To'] = email_address
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(html_content, 'html'))
-
-    with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-        server.starttls()
-        server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-        server.send_message(msg)
 
 
 def generate_confirmation_code():

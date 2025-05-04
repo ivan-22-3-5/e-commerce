@@ -58,17 +58,8 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str
     STRIPE_WEBHOOK_SECRET: str
 
-    SMTP_USERNAME: str
-    SMTP_PASSWORD: str
-    SMTP_PORT: int
-    SMTP_MAIL: str
-    SMTP_SERVER: str
-
     REDIS_HOST: str
     REDIS_PORT: int
-
-    CELERY_BROKER_URL: str
-    CELERY_BACKEND_URL: str
 
 
 settings = Settings()
