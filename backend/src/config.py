@@ -22,8 +22,6 @@ class Rules(BaseSettings):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='src/.env', env_file_encoding='utf-8')
 
-    TOKEN_SECRET_KEY: str
-
     ACCESS_TOKEN_EXPIRATION_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRATION_DAYS: int = 15
     RECOVERY_TOKEN_EXPIRATION_MINUTES: int = 15
@@ -39,25 +37,26 @@ class Settings(BaseSettings):
     IMAGES_BASE_PATH: str = '/static/product_images/'
     IMAGES_BASE_URL: str = IMAGES_HOST + IMAGES_BASE_PATH
 
-    STRIPE_SECRET_KEY: str
-    STRIPE_WEBHOOK_SECRET: str
+    CORS_ORIGINS: list[str] = ["*"]
+
+    SAME_SITE_COOKIE: Literal['strict', 'lax', 'none'] = "strict"
 
     PAYMENT_SUCCESS_REDIRECT_URL: str = 'http://localhost:8000/payment/success'
 
     GOOGLE_AUTH_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
     GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
     GOOGLE_USER_INFO_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
+
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URL: str
 
-    PASSWORD_RECOVERY_LINK: str
+    TOKEN_SECRET_KEY: str
 
     POSTGRESQL_DB_URL: str
 
-    CORS_ORIGINS: list[str]
-
-    SAME_SITE_COOKIE: Literal['strict', 'lax', 'none']
+    STRIPE_SECRET_KEY: str
+    STRIPE_WEBHOOK_SECRET: str
 
     SMTP_USERNAME: str
     SMTP_PASSWORD: str
