@@ -7,7 +7,7 @@ services:
       dockerfile: ./docker/api/Dockerfile
     environment:
       POSTGRESQL_DB_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      REDIS_HOST: petstore_redis
+      REDIS_HOST: dragonfly
       REDIS_PORT: 6379
 
       CELERY_BROKER_URL: ${CELERY_BROKER_URL}
@@ -29,14 +29,14 @@ services:
       SMTP_SERVER: ${SMTP_SERVER}
     depends_on:
       - db
-      - redis
+      - dragonfly
     ports:
       - "8000:8000"
     volumes:
       - petstore_static:/app/${STATIC_PATH}
-  redis:
-    container_name: petstore_redis
-    image: redis:latest
+  dragonfly:
+    container_name: dragonfly
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
     ports:
       - "6380:6379"
   db:
@@ -67,7 +67,7 @@ services:
       SMTP_SERVER: ${SMTP_SERVER}
     depends_on:
       - api
-      - redis
+      - dragonfly
   flower:
     container_name: flower
     build:
@@ -87,7 +87,7 @@ services:
       SMTP_SERVER: ${SMTP_SERVER}
     depends_on:
       - api
-      - redis
+      - dragonfly
       - celery_worker
 
 volumes:
