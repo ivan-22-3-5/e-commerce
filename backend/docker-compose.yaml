@@ -40,7 +40,7 @@ services:
     ports:
       - "6380:6379"
   db:
-    image: postgres:14
+    image: postgres:17
     container_name: db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
