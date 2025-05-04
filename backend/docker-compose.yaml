@@ -7,8 +7,29 @@ services:
       dockerfile: ./docker/api/Dockerfile
     environment:
       POSTGRESQL_DB_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_HOST: petstore_redis
+      REDIS_PORT: 6379
+
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_BACKEND_URL: ${CELERY_BACKEND_URL}
+
+      TOKEN_SECRET_KEY: ${TOKEN_SECRET_KEY}
+
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URL: ${GOOGLE_REDIRECT_URL}
+
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_MAIL: ${SMTP_MAIL}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SERVER: ${SMTP_SERVER}
     depends_on:
       - db
+      - redis
     ports:
       - "8000:8000"
     volumes:
@@ -18,33 +39,6 @@ services:
     image: redis:latest
     ports:
       - "6380:6379"
-#  celery_worker:
-#    container_name: celery_worker
-#    build:
-#      context: .
-#      dockerfile: ./docker/celery-worker/Dockerfile
-#    command: celery -A src.celery_tasks:celery worker -l info
-#    environment:
-#      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-#      - CELERY_BACKEND_URL=${CELERY_BACKEND_URL}
-#    depends_on:
-#      - api
-#      - redis
-#  flower:
-#    container_name: flower
-#    build:
-#      context: .
-#      dockerfile: ./docker/celery-worker/Dockerfile
-#    command: celery -A src.celery_tasks:celery flower --port=5555
-#    ports:
-#      - "5555:5555"
-#    environment:
-#      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-#      - CELERY_BACKEND_URL=${CELERY_BACKEND_URL}
-#    depends_on:
-#      - api
-#      - redis
-#      - celery_worker
   db:
     image: postgres:14
     container_name: db
@@ -56,6 +50,45 @@ services:
       - "5433:5432"
     volumes:
       - petstore_db_data:/var/lib/postgresql/data
+  celery_worker:
+    container_name: celery_worker
+    build:
+      context: .
+      dockerfile: ./docker/celery-worker/Dockerfile
+    command: celery -A src.tasks:celery worker -l info
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_BACKEND_URL: ${CELERY_BACKEND_URL}
+
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_MAIL: ${SMTP_MAIL}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SERVER: ${SMTP_SERVER}
+    depends_on:
+      - api
+      - redis
+  flower:
+    container_name: flower
+    build:
+      context: .
+      dockerfile: ./docker/celery-worker/Dockerfile
+    command: celery -A src.tasks:celery flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_BACKEND_URL: ${CELERY_BACKEND_URL}
+
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_MAIL: ${SMTP_MAIL}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SERVER: ${SMTP_SERVER}
+    depends_on:
+      - api
+      - redis
+      - celery_worker
 
 volumes:
   petstore_db_data:
