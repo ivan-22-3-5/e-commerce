@@ -8,7 +8,7 @@ from .config import celery_config
 
 
 def send_email(email_address: str, subject: str, template_name: str, **kwargs):
-    env = Environment(loader=FileSystemLoader('src/celery_/email_templates'))
+    env = Environment(loader=FileSystemLoader(['src/email_templates', 'src/celery_/email_templates']))
     template = env.get_template(template_name)
     html_content = template.render(**kwargs)
 
