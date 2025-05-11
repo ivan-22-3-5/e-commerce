@@ -30,8 +30,9 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
                      db: AsyncSession) -> list[models.Product]:
         ts_query = func.plainto_tsquery('english', query)
         tsvector = func.to_tsvector('english', models.Product.title + ' ' + models.Product.description)
+        rank = func.ts_rank(tsvector, ts_query)
 
-        stmt = select(models.Product).distinct()
+        stmt = select(models.Product, rank).distinct()
 
         if category_ids:
             assoc = product_category_association
@@ -42,7 +43,7 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
         stmt = stmt.where(and_(tsvector.op('@@')(ts_query),
                                models.Product.is_active == True))
         stmt = stmt.limit(pagination and pagination.limit).offset(pagination and pagination.limit)
-        stmt = stmt.order_by(desc(func.ts_rank(tsvector, ts_query)))
+        stmt = stmt.order_by(desc(rank))
 
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return list(map(lambda x: x[0], result.all()))
