@@ -109,7 +109,7 @@ async def register(user: UserIn, db: SessionDep, redis: RedisClientDep):
 @router.post('/login', status_code=status.HTTP_200_OK, response_model=Token)
 async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDep, res: Response):
     user = await UserCRUD.get_by_email(user_credentials.username, db)
-    if user.password is None:
+    if user is not None and user.password is None:
         raise InvalidCredentialsError("Account is registered with an external provider")
 
     if not (user and verify_password(user_credentials.password, user.password)):
