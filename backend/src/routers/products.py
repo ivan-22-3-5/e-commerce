@@ -1,6 +1,7 @@
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, UploadFile
+from fastapi import APIRouter, status, Depends, UploadFile, Query
 
 from src.config import settings, rules
 from src.crud import ProductCRUD, ReviewCRUD
@@ -29,8 +30,10 @@ async def get_products(db: SessionDep, pagination: PaginationParams = Depends())
 
 
 @router.get('/search', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
-async def search_products(q: str, db: SessionDep):
-    return await ProductCRUD.search(q, db=db)
+async def search_products(db: SessionDep, q: str,
+                          categories: Annotated[list[int], Query(alias="category")] = None,
+                          pagination: PaginationParams = Depends()):
+    return await ProductCRUD.search(q, category_ids=categories, db=db)
 
 
 @router.get('/all', status_code=status.HTTP_200_OK, response_model=list[ProductOut], dependencies=[AdminRole])
