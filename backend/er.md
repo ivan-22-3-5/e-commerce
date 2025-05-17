@@ -4,7 +4,7 @@ erDiagram
         int id PK
         string title
         string description
-        float full_price
+        int full_price
         int discount
         int quantity
         bool is_active
@@ -53,7 +53,7 @@ erDiagram
 
     ORDERITEM {
         int order_id FK
-        money total_price
+        int total_price
         int product_id FK
         int quantity
     }
@@ -64,7 +64,7 @@ erDiagram
         int product_id FK
         float rating
         string content
-        datatime created_at
+        timestamp created_at
     }
 
     PRODUCT }o--o{ CATEGORY: ""
