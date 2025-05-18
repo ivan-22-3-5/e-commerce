@@ -46,6 +46,7 @@ async def get_access_token(code: str, http: HTTPClientDep) -> str:
                          },
                          headers={"Content-Type": "application/x-www-form-urlencoded"}) as response:
         if response.status != 200:
+            # TODO: proper error handling
             logger.error(
                 f"Failed to get access token from Google: {await response.text()}"
             )
@@ -60,6 +61,7 @@ async def get_google_user_info(access_token: GoogleAccessTokenDep, http: HTTPCli
     async with http.post(settings.GOOGLE_USER_INFO_URL,
                          headers={"Authorization": f"Bearer {access_token}"}) as response:
         if response.status != 200:
+            # TODO: proper error handling
             logger.error(
                 f"Failed to get user info from Google: {await response.text()}"
             )

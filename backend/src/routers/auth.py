@@ -75,7 +75,7 @@ async def google_callback(res: Response, google_user: GoogleUserInfoDep, db: Ses
         identity_provider_id=google_user.id,
         email=google_user.email,
         password=None,
-        name=google_user.name[:rules.MAX_USER_NAME_LENGTH]
+        name=google_user.name[:rules.MAX_USERNAME_LENGTH]
     ), db=db)
 
     return await handle_user_tokens(new_user.id, res, db)
