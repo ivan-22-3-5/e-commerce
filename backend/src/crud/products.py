@@ -42,7 +42,7 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
 
         stmt = stmt.where(and_(tsvector.op('@@')(ts_query),
                                models.Product.is_active == True))
-        stmt = stmt.limit(pagination and pagination.limit).offset(pagination and pagination.limit)
+        stmt = stmt.limit(pagination and pagination.limit).offset(pagination and pagination.offset)
         stmt = stmt.order_by(desc(rank))
 
         result = await db.execute(stmt)
