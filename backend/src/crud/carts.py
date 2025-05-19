@@ -1,56 +1,17 @@
-from sqlalchemy import and_
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from src.crud.base import _CRUDBase
-from src.crud.products import ProductCRUD
-from src.custom_exceptions import ResourceDoesNotExistError
+from src.crud.base import Deletable, Creatable
 from src.db import models
 from src.db.models import CartItem
-from src.schemas.cart import Cart
-from src.schemas.item import ItemIn, Item
 
 
-class CartCRUD(_CRUDBase):
+class CartItemCRUD(Deletable, Creatable):
     model = models.CartItem
+    key = models.CartItem.user_id
 
-    @classmethod
-    async def get_cart(cls, user_id: int, db: AsyncSession) -> Cart:
-        items = await cls._get_all(cls.model.user_id == user_id, db)
-        return Cart(
-            items=[Item(product_id=item.product_id,
-                        quantity=item.quantity,
-                        total_price=item.total_price) for item in items],
-            total_price=sum(item.total_price for item in items)
-        )
+    async def get_all_by_user_id(self, user_id: int) -> list[CartItem]:
+        return await self._get_all(self.__class__.model.user_id == user_id)
 
-    @classmethod
-    async def add_item(cls, user_id: int, item: ItemIn, db: AsyncSession):
-        if (await ProductCRUD.get(item.product_id, db)) is None:
-            raise ResourceDoesNotExistError("Product with the given id does not exist")
-
-        if existing_item := await cls._get_one(
-                and_(cls.model.user_id == user_id, cls.model.product_id == item.product_id), db):
-            existing_item.quantity += item.quantity
-        else:
-            db.add(CartItem(
-                user_id=user_id,
-                product_id=item.product_id,
-                quantity=item.quantity))
-        await db.flush()
-
-    @classmethod
-    async def remove_item(cls, user_id: int, item: ItemIn, db: AsyncSession):
-        if existing_item := await cls._get_one(
-                and_(cls.model.user_id == user_id, cls.model.product_id == item.product_id), db):
-            if item.quantity >= existing_item.quantity:
-                await db.delete(existing_item)
-            else:
-                existing_item.quantity -= item.quantity
-        await db.flush()
-
-    @classmethod
-    async def clear(cls, user_id: int, db: AsyncSession):
-        items = await cls._get_all(cls.model.user_id == user_id, db)
+    async def delete_all_by_user_id(self, user_id: int):
+        items = await self._get_all(self.__class__.model.user_id == user_id)
         for item in items:
-            await db.delete(item)
-        await db.flush()
+            await self.db.delete(item)
+        await self.db.flush()

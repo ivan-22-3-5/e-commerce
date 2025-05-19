@@ -1,5 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.crud.base import Retrievable, Deletable, Creatable
 from src.db import models
 
@@ -8,12 +6,11 @@ class TokenCRUD(Creatable, Retrievable, Deletable):
     model = models.TokenBase
     key = models.TokenBase.user_id
 
-    @classmethod
-    async def upsert(cls, token: models.TokenBase, db: AsyncSession):
-        if existing_token := await cls.get(token.user_id, db, on_not_found='return-none'):
+    async def upsert(self, token: models.TokenBase):
+        if existing_token := await self.get(token.user_id, on_not_found='return-none'):
             existing_token.token = token.token
         else:
-            await cls.create(token, db=db)
+            await self.create(token)
 
 
 class RecoveryTokenCRUD(TokenCRUD):
