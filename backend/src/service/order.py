@@ -1,3 +1,4 @@
+from src.crud import OrderCRUD, CartItemCRUD, ProductCRUD
 from src.custom_exceptions import ResourceDoesNotExistError, InsufficientStockError, NotEnoughRightsError, \
     InvalidOrderStatusError
 from src.custom_types import OrderStatus
@@ -6,7 +7,7 @@ from src.schemas.cart import Cart
 
 
 class OrderService:
-    def __init__(self, order_crud, cart_item_crud, product_crud):
+    def __init__(self, order_crud: OrderCRUD, cart_item_crud: CartItemCRUD, product_crud: ProductCRUD):
         self.order_crud = order_crud
         self.cart_item_crud = cart_item_crud
         self.product_crud = product_crud
@@ -65,3 +66,6 @@ class OrderService:
 
     async def get_orders(self, filter=None, pagination=None):
         return await self.order_crud.get_all(filter=filter, pagination=pagination)
+
+    async def get_by_user(self, user_id: int):
+        return await self.order_crud.get_by_user(user_id)
