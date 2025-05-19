@@ -8,7 +8,7 @@ from src.config import settings
 
 class FileStorage(ABC):
     @abstractmethod
-    async def save(self, file: str, path: str):
+    async def save(self, file: bytes, path: str):
         pass
 
     @abstractmethod
