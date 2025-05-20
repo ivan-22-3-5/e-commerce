@@ -12,24 +12,23 @@ router = APIRouter(
     tags=['reviews']
 )
 
-
-@router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
-async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
-    product = await ProductCRUD.get(product_id, db)
-    await ReviewCRUD.create(Review(
-        product_id=product.id,
-        user_id=user.id,
-        **review.model_dump(),
-    ), db)
-    return Message(message="Review has been successfully added")
-
-
-@router.delete('/{review_id}', status_code=status.HTTP_200_OK, response_model=Message)
-async def delete_review(review_id: int, user: CurrentUserDep, db: SessionDep):
-    def predicate(review: Review):
-        if review.user_id != user.id:
-            raise NotEnoughRightsError("Only the owner can delete the review")
-        return True
-
-    await ReviewCRUD.delete(review_id, db, predicate=predicate)
-    return Message(message="Review has been successfully deleted")
+# @router.post('', status_code=status.HTTP_201_CREATED, response_model=Message)
+# async def create_review(user: CurrentUserDep, product_id: int, review: ReviewIn, db: SessionDep):
+#     product = await ProductCRUD.get(product_id, db)
+#     await ReviewCRUD.create(Review(
+#         product_id=product.id,
+#         user_id=user.id,
+#         **review.model_dump(),
+#     ), db)
+#     return Message(message="Review has been successfully added")
+#
+#
+# @router.delete('/{review_id}', status_code=status.HTTP_200_OK, response_model=Message)
+# async def delete_review(review_id: int, user: CurrentUserDep, db: SessionDep):
+#     def predicate(review: Review):
+#         if review.user_id != user.id:
+#             raise NotEnoughRightsError("Only the owner can delete the review")
+#         return True
+#
+#     await ReviewCRUD.delete(review_id, db, predicate=predicate)
+#     return Message(message="Review has been successfully deleted")

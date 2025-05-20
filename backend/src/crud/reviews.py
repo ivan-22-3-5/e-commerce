@@ -1,5 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.crud.base import Retrievable, Deletable, Creatable
 from src.db import models
 
@@ -8,10 +6,8 @@ class ReviewCRUD(Creatable, Retrievable, Deletable):
     model = models.Review
     key = models.Review.id
 
-    @classmethod
-    async def get_by_user(cls, user_id: int, db: AsyncSession) -> list[models.Review]:
-        return await cls._get_all(models.Review.user_id == user_id, db)
+    async def get_by_user(self, user_id: int) -> list[models.Review]:
+        return await self._get_all(models.Review.user_id == user_id)
 
-    @classmethod
-    async def get_by_product(cls, product_id: int, db: AsyncSession) -> list[models.Review]:
-        return await cls._get_all(models.Review.product_id == product_id, db)
+    async def get_by_product(self, product_id: int) -> list[models.Review]:
+        return await self._get_all(models.Review.product_id == product_id)

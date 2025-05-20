@@ -16,21 +16,24 @@ class _CRUDBase:
     model = None
     key = None
 
-    @classmethod
-    async def _get_one(cls, criteria, db: AsyncSession):
-        result = await db.execute(select(cls.model).filter(criteria))
+    def __init__(self, db: AsyncSession):
+        self.db: AsyncSession = db
+
+    async def _get_one(self, criteria):
+        result = await self.db.execute(select(self.__class__.model).filter(criteria))
         return result.scalars().first()
 
-    @classmethod
-    async def _get_all(cls, criteria, db: AsyncSession,
-                       pagination: PaginationParams = None, order_by=None,
+    async def _get_all(self,
+                       criteria,
+                       pagination: PaginationParams = None,
+                       order_by=None,
                        for_update: bool = False):
-        q = (select(cls.model)
+        q = (select(self.__class__.model)
              .filter(criteria)
              .order_by(order_by)
              .limit(pagination and pagination.limit)
              .offset(pagination and pagination.offset))
-        result = await db.execute(q.with_for_update() if for_update else q)
+        result = await self.db.execute(q.with_for_update() if for_update else q)
         return result.scalars().all()
 
     def __init_subclass__(cls, **kwargs):
@@ -40,70 +43,76 @@ class _CRUDBase:
 
 
 class Creatable(_CRUDBase):
-    @classmethod
-    async def create(cls, obj, db: AsyncSession):
+    async def create(self, obj):
         try:
-            db.add(obj)
-            await db.flush()
-            await db.refresh(obj)
+            self.db.add(obj)
+            await self.db.flush()
+            await self.db.refresh(obj)
             return obj
         except IntegrityError as e:
             error_message = str(e.orig)
 
             if "UniqueViolationError" in error_message:
-                raise ResourceAlreadyExistsError(_craft_already_exists_error_message(cls.model, error_message))
+                raise ResourceAlreadyExistsError(
+                    _craft_already_exists_error_message(self.__class__.model, error_message)
+                )
             elif "ForeignKeyViolationError" in error_message:
-                raise ResourceDoesNotExistError(_craft_doesnt_exist_error_message(cls.model, error_message))
+                raise ResourceDoesNotExistError(
+                    _craft_doesnt_exist_error_message(self.__class__.model, error_message)
+                )
             else:
                 logger.error(f"Unexpected IntegrityError: {e}")
                 return None
 
 
 class Retrievable(_CRUDBase):
-    @classmethod
-    async def get(cls, key, db: AsyncSession, *,
-                  on_not_found: Literal['raise-error', 'return-none'] = 'raise-error'):
-        if (entity := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
+    async def get(self, key, *, on_not_found: Literal['raise-error', 'return-none'] = 'raise-error'):
+        if (entity := await self._get_one(self.__class__.key == key)) is None and on_not_found == 'raise-error':
             raise ResourceDoesNotExistError(
-                f"{cls.model.__name__} with the given {str(cls.key).split('.')[-1]} does not exist.")
+                f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist.")
         return entity
 
 
 class Updatable(_CRUDBase):
-    @classmethod
-    async def update(cls, key, obj_update: ObjUpdate, db: AsyncSession, *,
+
+    async def update(self, key, obj_update: ObjUpdate, *,
                      predicate: Callable[[Any], bool] = None,
                      on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
-        if (entity_to_update := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
+        if ((entity_to_update := await self._get_one(self.__class__.key == key)) is None
+                and on_not_found == 'raise-error'):
             raise ResourceDoesNotExistError(
-                f"{cls.model.__name__} with the given {str(cls.key).split('.')[-1]} does not exist.")
+                f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist."
+            )
+
         if entity_to_update and predicate is None or predicate(entity_to_update):
             for k, v in obj_update.model_dump(exclude_none=True).items():
                 setattr(entity_to_update, k, v)
-            await db.flush()
-            await db.refresh(entity_to_update)
+            await self.db.flush()
+            await self.db.refresh(entity_to_update)
             return entity_to_update
         return None
 
 
 class Deletable(_CRUDBase):
-    @classmethod
-    async def delete(cls, key, db: AsyncSession, *,
+    async def delete(self, key, *,
                      predicate: Callable[[Any], bool] = None,
                      on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
-        if (entity_to_delete := await cls._get_one(cls.key == key, db)) is None and on_not_found == 'raise-error':
+        if (
+                (entity_to_delete := await self._get_one(self.__class__.key == key)) is None
+                and on_not_found == 'raise-error'):
             raise ResourceDoesNotExistError(
-                f"{cls.model.__name__} with the given {str(cls.key).split('.')[-1]} does not exist.")
+                f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist."
+            )
         if entity_to_delete and predicate is None or predicate(entity_to_delete):
             try:
-                await db.delete(entity_to_delete)
-                await db.flush()
+                await self.db.delete(entity_to_delete)
+                await self.db.flush()
             except IntegrityError as e:
                 error_message = str(e.orig)
 
                 if "ForeignKeyViolationError" in error_message:
                     raise DependentEntityExistsError(
-                        _craft_dependent_entity_exist_error_message(cls.model, error_message))
+                        _craft_dependent_entity_exist_error_message(self.__class__.model, error_message))
                 else:
                     logger.error(f"Unexpected IntegrityError: {e}")
 
