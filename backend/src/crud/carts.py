@@ -1,11 +1,11 @@
 from sqlalchemy import and_
 
-from src.crud.base import Deletable, Creatable
+from src.crud.base import Creatable
 from src.db import models
 from src.db.models import CartItem
 
 
-class CartItemCRUD(Deletable, Creatable):
+class CartItemCRUD(Creatable):
     model = models.CartItem
     key = models.CartItem.user_id
 
@@ -21,3 +21,9 @@ class CartItemCRUD(Deletable, Creatable):
         for item in items:
             await self.db.delete(item)
         await self.db.flush()
+
+    async def delete(self, user_id: int, product_id: int):
+        item = await self.get(user_id, product_id)
+        if item:
+            await self.db.delete(item)
+            await self.db.flush()

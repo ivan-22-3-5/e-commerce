@@ -37,7 +37,7 @@ class CartService:
     async def remove_item(self, user_id: int, item: ItemIn):
         if existing_item := await self.cart_crud.get(user_id, item.product_id):
             if item.quantity >= existing_item.quantity:
-                await self.cart_crud.delete(existing_item)
+                await self.cart_crud.delete(user_id, item.product_id)
             else:
                 existing_item.quantity -= item.quantity
             # TODO: CHECK IF FLUSH IS NEEDED
