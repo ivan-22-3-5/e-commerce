@@ -1,18 +1,12 @@
 from fastapi import APIRouter, status, Depends
 
-from src.crud import OrderCRUD, ProductCRUD, CartCRUD
 from src.custom_types import OrderStatus
-from src.db.models import Order
 from src.permissions import AdminRole
 from src.schemas.filtration import PaginationParams, OrderFilter
 from src.schemas.message import Message
 from src.schemas.order import OrderOut
-from src.deps import CurrentUserDep, SessionDep
+from src.deps import CurrentUserDep, CartServiceDep, OrderServiceDep
 from src.custom_exceptions import (
-    ResourceDoesNotExistError,
-    NotEnoughRightsError,
-    InsufficientStockError,
-    InvalidOrderStatusError,
     EmptyCartError,
 )
 
@@ -23,69 +17,35 @@ router = APIRouter(
 
 
 @router.post('', status_code=status.HTTP_201_CREATED, response_model=OrderOut)
-async def create_order(user: CurrentUserDep, db: SessionDep):
-    cart = await CartCRUD.get_cart(user.id, db)
+async def create_order(user: CurrentUserDep, order_service: OrderServiceDep, cart_service: CartServiceDep):
+    cart = await cart_service.get_cart(user.id)
 
     if len(cart.items) == 0:
         raise EmptyCartError("The user's cart is empty")
 
-    product_ids = list(map(lambda i: i.product_id, cart.items))
-    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
-                                                                              for_update=True,
-                                                                              db=db))}
+    order = await order_service.create_order(user.id, cart)
 
-    for item in cart.items:
-        product = products.get(item.product_id, None)
-
-        if product is None:
-            raise ResourceDoesNotExistError(f"Product with id {item.product_id} does not exist")
-
-        if product.quantity < item.quantity:
-            raise InsufficientStockError(f"Insufficient stock for product ID {item.product_id}")
-
-        product.quantity -= item.quantity
-
-    order = await OrderCRUD.create(Order(
-        items=cart.items,
-        user_id=user.id
-    ), db)
-
-    await CartCRUD.clear(user.id, db)
+    await cart_service.clear_cart(user.id)
 
     return order
 
 
 @router.post('/{order_id}/cancel', status_code=status.HTTP_204_NO_CONTENT)
-async def cancel_order(order_id: int, user: CurrentUserDep, db: SessionDep):
-    order = await OrderCRUD.get(order_id, db)
-    if order.user_id != user.id:
-        raise NotEnoughRightsError("User is not the order owner")
-
-    # TODO: reconsider order cancellation behavior for different statuses
-    if order.status != OrderStatus.PENDING:
-        raise InvalidOrderStatusError("Order cannot be cancelled")
-
-    product_ids = list(map(lambda i: i.product_id, order.items))
-    products = {product.id: product for product in (await ProductCRUD.get_all(product_ids,
-                                                                              for_update=True,
-                                                                              db=db))}
-    for item in order.items:
-        products[item.product_id].quantity += item.quantity
-
-    order.status = OrderStatus.CANCELLED
+async def cancel_order(order_id: int, user: CurrentUserDep, order_service: OrderServiceDep):
+    await order_service.cancel_order(order_id, user.id)
 
 
 @router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message,
               dependencies=[AdminRole])
-async def change_order_status(order_id: int, new_status: OrderStatus, db: SessionDep):
-    order = await OrderCRUD.get(order_id, db)
+async def change_order_status(order_id: int, new_status: OrderStatus, order_service: OrderServiceDep):
+    order = await order_service.get_order(order_id)
     order.status = new_status
     return Message(message=f"The order status updated to {new_status.value}")
 
 
 @router.get('/', response_model=list[OrderOut], status_code=status.HTTP_200_OK,
             dependencies=[AdminRole])
-async def get_orders(db: SessionDep,
+async def get_orders(order_service: OrderServiceDep,
                      filter: OrderFilter = Depends(),
                      pagination: PaginationParams = Depends()):
-    return await OrderCRUD.get_all(db=db, filter=filter, pagination=pagination)
+    return await order_service.get_orders(filter=filter, pagination=pagination)
