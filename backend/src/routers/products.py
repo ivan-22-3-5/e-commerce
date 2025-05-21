@@ -75,19 +75,8 @@ async def add_product_image(product_id: int, file: UploadFile, product_service: 
 
 
 @router.put('/{product_id}/images', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
-async def change_product_images(product_id: int, images: list[str], db: SessionDep, storage: FileStorageDep):
-    product = await ProductCRUD.get(product_id, db)
-
-    current_images = set(product.images)
-    new_images = set(images)
-
-    if not new_images.issubset(current_images):
-        raise ResourceDoesNotExistError("One or more of the specified images does not exist")
-
-    for filename in current_images - new_images:
-        await storage.delete(f"{product_id}/{filename}")
-
-    product.images = images
+async def change_product_images(product_id: int, images: list[str], product_service: ProductServiceDep):
+    await product_service.change_product_images(product_id, images)
 
 
 # region development postponed
