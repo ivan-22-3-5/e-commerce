@@ -121,7 +121,7 @@ async def recover_password(email: EmailStr, user_service: UserServiceDep, token_
 
     await token_service.upsert_recovery_token(user.id, recovery_token)
 
-    send_password_recovery_email.delay(username=user.username,
+    send_password_recovery_email.delay(username=user.name,
                                        link=recovery_token,
                                        email_address=email)
     return Message(message="Recovery email sent")
