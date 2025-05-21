@@ -17,7 +17,7 @@ async def create_category(category: CategoryIn, category_service: CategoryServic
 
 
 @router.delete('/{category_id}', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
-async def delete_category(category_id: str, category_service: CategoryServiceDep):
+async def delete_category(category_id: int, category_service: CategoryServiceDep):
     await category_service.delete_category(category_id)
 
 

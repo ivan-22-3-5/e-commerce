@@ -31,5 +31,5 @@ async def remove_item_from_cart(user: CurrentUserDep, item: ItemIn, cart_service
 
 @router.post('/clear', response_model=CartOut, status_code=status.HTTP_200_OK)
 async def clear_cart(user: CurrentUserDep, cart_service: CartServiceDep):
-    await cart_service.clear(user.id)
+    await cart_service.clear_cart(user.id)
     return await cart_service.get_cart(user.id)
