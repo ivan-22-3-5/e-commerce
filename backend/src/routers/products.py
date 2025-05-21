@@ -4,13 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends, UploadFile, Query
 
 from src.config import settings
-from src.crud import ProductCRUD
 from src.custom_exceptions import (
     FileTooLargeError,
     NotSupportedFileTypeError,
-    ResourceDoesNotExistError
 )
-from src.deps import SessionDep, FileStorageDep, ProductServiceDep
+from src.deps import SessionDep, ProductServiceDep
 from src.permissions import AdminRole
 from src.schemas.filtration import PaginationParams
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
