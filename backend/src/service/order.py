@@ -34,10 +34,8 @@ class OrderService:
 
         return order
 
-    async def cancel_order(self, order_id: int, user_id: int):
+    async def cancel_order(self, order_id: int):
         order = await self.order_crud.get(order_id)
-        if order.user_id != user_id:
-            raise NotEnoughRightsError("User is not the order owner")
 
         # TODO: reconsider order cancellation behavior for different statuses
         if order.status != OrderStatus.PENDING:

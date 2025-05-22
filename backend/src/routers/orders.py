@@ -7,7 +7,7 @@ from src.schemas.message import Message
 from src.schemas.order import OrderOut
 from src.deps import CurrentUserDep, CartServiceDep, OrderServiceDep
 from src.custom_exceptions import (
-    EmptyCartError,
+    EmptyCartError, NotEnoughRightsError,
 )
 
 router = APIRouter(
@@ -32,6 +32,9 @@ async def create_order(user: CurrentUserDep, order_service: OrderServiceDep, car
 
 @router.post('/{order_id}/cancel', status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_order(order_id: int, user: CurrentUserDep, order_service: OrderServiceDep):
+    order = await order_service.get_order(order_id)
+    if order.user_id != user.id:
+        raise NotEnoughRightsError("User is not the order owner")
     await order_service.cancel_order(order_id, user.id)
 
 
