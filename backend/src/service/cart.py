@@ -40,7 +40,6 @@ class CartService:
                 await self.cart_crud.delete(user_id, item.product_id)
             else:
                 existing_item.quantity -= item.quantity
-            # TODO: CHECK IF FLUSH IS NEEDED
 
     async def clear_cart(self, user_id: int):
         await self.cart_crud.delete_all_by_user_id(user_id)

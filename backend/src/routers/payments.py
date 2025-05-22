@@ -66,4 +66,4 @@ async def handle_payment_failed(event, order_service: OrderServiceDep):
     intent = event.data.object
     metadata = intent['metadata']
     if order_id := metadata.get('order_id'):
-        await order_service.delete_order(int(order_id))
+        await order_service.withdraw_order(int(order_id))

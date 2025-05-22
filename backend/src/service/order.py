@@ -50,10 +50,10 @@ class OrderService:
 
         order.status = OrderStatus.CANCELLED
 
-    async def delete_order(self, order_id: int):
+    async def withdraw_order(self, order_id: int):
         order = await self.order_crud.get(order_id)
 
-        # TODO: reconsider order deletion behavior for different statuses
+        # TODO: reconsider order withdrawal behavior for different statuses
 
         product_ids = list(map(lambda i: i.product_id, order.items))
         products = {product.id: product for product in (await self.product_crud.get_all(product_ids, for_update=True))}
