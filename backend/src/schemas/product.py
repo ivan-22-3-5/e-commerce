@@ -1,50 +1,69 @@
-from typing import Optional
-
+from typing import Optional, List
+from datetime import datetime
 from pydantic import BaseModel, Field, field_validator, field_serializer
 from pydantic_core.core_schema import ValidationInfo
 
 from src.config import settings, rules
 from src.schemas.base import ObjUpdate
+from src.schemas.category import CategoryOut
 
 
 class ProductIn(BaseModel):
-    title: str = Field(max_length=rules.MAX_PRODUCT_TITLE_LENGTH)
-    description: str = Field(max_length=rules.MAX_PRODUCT_DESCRIPTION_LENGTH)
-    full_price: float = Field(ge=0)
-    quantity: int = Field(gt=0, default=0)
+    title: str = Field(..., max_length=rules.MAX_PRODUCT_TITLE_LENGTH)
+    description: str = Field(..., max_length=rules.MAX_PRODUCT_DESCRIPTION_LENGTH)
+    full_price: float = Field(..., ge=0)
+    quantity: int = Field(..., ge=0)
+    discount: Optional[int] = Field(default=0, ge=0, le=100)
+    category_ids: Optional[List[int]] = Field(default=None, description="Список ID категорій")
 
     @field_serializer('full_price')
-    def convert_price_to_int(self, v: float) -> int:
+    def serialize_full_price_to_int(self, v: float) -> int:
         return int(v * 100)
 
 
 class ProductOut(BaseModel):
     id: int
-    rating: float
-    final_price: int
     title: str
     description: str
+    quantity: int
     full_price: int
-    images: list[str]
+    discount: int
+    final_price: int
+    rating: float
+    images: List[str]
+    is_active: bool
+    created_at: datetime
+    categories: List[CategoryOut] = []
 
     @field_serializer('full_price', 'final_price')
-    def convert_price_to_float(self, v: int) -> float:
+    def serialize_prices_to_float(self, v: int) -> float:
         return round(v / 100, 2)
 
-    @field_validator('images', mode='after')
     @classmethod
-    def replace_filenames_with_urls(cls, images: list[str], info: ValidationInfo):
-        return list(map(lambda filename: f"{settings.IMAGES_BASE_URL}{info.data['id']}/{filename}", images))
+    def replace_filenames_with_urls(cls, images: List[str], info: ValidationInfo) -> List[str]:
+        product_id = None
+        if info.data and 'id' in info.data:
+            product_id = info.data['id']
+
+        if product_id is not None:
+            return [f"{settings.IMAGES_BASE_URL}{product_id}/{filename}" for filename in images]
+        return images  # pragma: no cover
+
+    class Config:
+        from_attributes = True
 
 
 class ProductUpdate(ObjUpdate):
     title: Optional[str] = Field(default=None, max_length=rules.MAX_PRODUCT_TITLE_LENGTH)
     description: Optional[str] = Field(default=None, max_length=rules.MAX_PRODUCT_DESCRIPTION_LENGTH)
     full_price: Optional[float] = Field(default=None, ge=0)
-    discount: Optional[float] = Field(default=None, ge=0, le=100)
+    discount: Optional[int] = Field(default=None, ge=0, le=100)
     is_active: Optional[bool] = Field(default=None)
-    quantity: Optional[int] = Field(default=None, gt=0)
+    quantity: Optional[int] = Field(default=None, ge=0)
+    category_ids: Optional[List[int]] = Field(default=None, description="Список ID категорій для оновлення")
 
-    @field_serializer('full_price')
-    def convert_price_to_int(self, v: float) -> int:
-        return v and int(v * 100)
+    @field_serializer('full_price', mode='before', when_used='always')
+    def serialize_update_full_price_to_int(self, v: Optional[float]) -> Optional[int]:
+        if v is not None:
+            return int(v * 100)
+        return None
