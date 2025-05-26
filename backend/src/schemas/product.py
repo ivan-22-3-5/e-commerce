@@ -62,7 +62,7 @@ class ProductUpdate(ObjUpdate):
     quantity: Optional[int] = Field(default=None, ge=0)
     category_ids: Optional[List[int]] = Field(default=None, description="Список ID категорій для оновлення")
 
-    @field_serializer('full_price', mode='before', when_used='always')
+    @field_serializer('full_price', when_used='always')
     def serialize_update_full_price_to_int(self, v: Optional[float]) -> Optional[int]:
         if v is not None:
             return int(v * 100)

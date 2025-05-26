@@ -38,8 +38,8 @@ async def create_product_review_endpoint(
 @router.get("", response_model=list[ReviewOut], status_code=status.HTTP_200_OK)
 async def get_reviews_for_product_endpoint(
         product_id: int,
-        pagination: PaginationParams = Depends(),
-        review_service: ReviewServiceDep = Depends()
+        review_service: ReviewServiceDep,
+        pagination: PaginationParams = Depends()
 ):
     try:
         reviews = await review_service.get_reviews_for_product(product_id=product_id, pagination=pagination)
