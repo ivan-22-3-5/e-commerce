@@ -52,25 +52,27 @@ app.include_router(orders.router)
 app.include_router(products.router)
 app.include_router(categories.router)
 app.include_router(reviews.router)
+app.include_router(reviews.reviews_router_individual)
 app.include_router(cart.router)
 app.include_router(payments.router)
 
 os.makedirs(settings.FILES_DIR, exist_ok=True)
-
 app.mount(settings.IMAGES_BASE_PATH, StaticFiles(directory=settings.FILES_DIR), name="static")
 
 
-def create_exception_handler(status_code, initial_detail):
+def create_exception_handler(status_code: int, initial_detail: str):
     async def exception_handler(_: Request, exception: PetStoreApiError) -> JSONResponse:
         content = {"detail": initial_detail}
         if exception.message:
             content["detail"] = exception.message
-        return JSONResponse(status_code=status_code, content=content, headers=exception.headers)
+
+        headers = getattr(exception, "headers", None)  # Ensure headers attribute exists
+        return JSONResponse(status_code=status_code, content=content, headers=headers)
 
     return exception_handler
 
 
-exception_handlers = [
+exception_handlers_map = [
     (ResourceDoesNotExistError, status.HTTP_404_NOT_FOUND, "Resource not found"),
     (ResourceAlreadyExistsError, status.HTTP_409_CONFLICT, "Resource already exists"),
     (NotEnoughRightsError, status.HTTP_403_FORBIDDEN, "Not enough rights to execute the operation"),
@@ -88,7 +90,7 @@ exception_handlers = [
     (EmptyCartError, status.HTTP_409_CONFLICT, "Cart is empty"),
 ]
 
-for exc, code, message in exception_handlers:
+for exc, code, message in exception_handlers_map:
     app.add_exception_handler(
         exc_class_or_status_code=exc,
         handler=create_exception_handler(code, message)
