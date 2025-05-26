@@ -8,11 +8,10 @@ from src.custom_exceptions import (
     FileTooLargeError,
     NotSupportedFileTypeError,
 )
-from src.deps import SessionDep, ProductServiceDep
+from src.deps import ProductServiceDep
 from src.permissions import AdminRole
 from src.schemas.filtration import PaginationParams
 from src.schemas.product import ProductIn, ProductOut, ProductUpdate
-from src.schemas.review import ReviewOut
 
 router = APIRouter(
     prefix='/products',
@@ -27,7 +26,7 @@ async def get_products(product_service: ProductServiceDep, pagination: Paginatio
 
 @router.get('/search', status_code=status.HTTP_200_OK, response_model=list[ProductOut])
 async def search_products(product_service: ProductServiceDep, q: str,
-                          categories: Annotated[list[int], Query(alias="category")] = None,
+                          categories: Annotated[list[int] | None, Query(alias="category")] = None,
                           pagination: PaginationParams = Depends()):
     return await product_service.search_products(q, categories=categories, pagination=pagination)
 
@@ -35,7 +34,7 @@ async def search_products(product_service: ProductServiceDep, q: str,
 @router.get('/all', status_code=status.HTTP_200_OK, response_model=list[ProductOut], dependencies=[AdminRole])
 async def get_products_admin(product_service: ProductServiceDep,
                              pagination: PaginationParams = Depends(),
-                             is_active: bool = None):
+                             is_active: bool | None = None):
     return await product_service.get_products(pagination=pagination, is_active=is_active)
 
 
@@ -54,31 +53,24 @@ async def delete_product(product_id: int, product_service: ProductServiceDep):
     await product_service.delete_product(product_id)
 
 
-# TODO: add resolution/aspect ratio regulation
 @router.post('/{product_id}/images', status_code=status.HTTP_204_NO_CONTENT,
              dependencies=[AdminRole])
 async def add_product_image(product_id: int, file: UploadFile, product_service: ProductServiceDep):
-    # size check is performed when the file is ALREADY uploaded
-    # this is wasteful, so the actual size regulation will be imposed on request by a proxy/middleware
-    if file.size > settings.FILE_SIZE_LIMIT:
+    if file.size is not None and file.size > settings.FILE_SIZE_LIMIT:
         raise FileTooLargeError("File is too large")
     if file.content_type not in settings.SUPPORTED_IMAGE_TYPES:
         raise NotSupportedFileTypeError("File type is not allowed")
 
-    ext = file.filename.split('.')[-1]
-    file = await file.read()
+    ext = ""
+    if file.filename:
+        ext = file.filename.split('.')[-1]
+
+    file_bytes = await file.read()
     filename = f"{uuid.uuid4().hex}.{ext}"
 
-    await product_service.add_product_image(product_id, file, filename)
+    await product_service.add_product_image(product_id, file_bytes, filename)
 
 
 @router.put('/{product_id}/images', status_code=status.HTTP_204_NO_CONTENT, dependencies=[AdminRole])
 async def change_product_images(product_id: int, images: list[str], product_service: ProductServiceDep):
     await product_service.change_product_images(product_id, images)
-
-
-# region development postponed
-@router.get('/{product_id}/reviews', status_code=status.HTTP_200_OK, response_model=list[ReviewOut])
-async def get_product_reviews(product_id: int, db: SessionDep):
-    return []
-# endregion
