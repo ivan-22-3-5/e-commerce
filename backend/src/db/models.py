@@ -1,9 +1,8 @@
 from datetime import datetime, UTC
-from typing import Optional
+from typing import Optional, Any
 
-from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column
+from sqlalchemy import Integer, String, TIMESTAMP, ForeignKey, Boolean, Table, Column, Float
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, declared_attr
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -31,6 +30,8 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
+
+    reviews: Mapped[list["Review"]] = relationship(back_populates="user", lazy="selectin")
 
 
 class TokenBase(Base):
@@ -61,9 +62,11 @@ class CartItem(ItemBase):
     __tablename__ = 'cart_items'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
 
-    @hybrid_property
-    def total_price(self):
-        return self.product.final_price * self.quantity
+    @property
+    def total_price(self) -> int:
+        if self.product:
+            return self.product.final_price * self.quantity
+        return 0
 
 
 class OrderItem(ItemBase):
@@ -83,12 +86,12 @@ class Order(Base):
 
     items: Mapped[list["OrderItem"]] = relationship('OrderItem', lazy='selectin', cascade="all, delete-orphan")
 
-    @hybrid_property
-    def total_price(self):
+    @property
+    def total_price(self) -> int:
         return sum(item.total_price for item in self.items)
 
-    def __init__(self, user_id: int, items: list[Item]):
-        super().__init__()
+    def __init__(self, user_id: int, items: list[Item], **kwargs: Any):
+        super().__init__(**kwargs)
         self.user_id = user_id
         self.items = [OrderItem(**item.model_dump()) for item in items]
 
@@ -104,22 +107,18 @@ class Product(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
     images: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    rating: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
-    reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin')
-
+    reviews: Mapped[list["Review"]] = relationship('Review', lazy='selectin', back_populates="product",
+                                                   cascade="all, delete-orphan")
     categories: Mapped[list["Category"]] = relationship('Category',
-                                                        lazy='select',
-                                                        secondary=product_category_association)
+                                                        lazy='selectin',
+                                                        secondary=product_category_association,
+                                                        back_populates="products")
 
-    # TODO: Shift computation from read time to write time 
-    @hybrid_property
-    def rating(self):
-        return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1) if self.reviews else 0
-
-    @hybrid_property
-    def final_price(self):
+    @property
+    def final_price(self) -> int:
         return int(self.full_price * (1 - self.discount / 100))
 
 
@@ -127,6 +126,10 @@ class Category(Base):
     __tablename__ = 'categories'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(rules.MAX_CATEGORY_NAME_LENGTH), unique=True)
+
+    products: Mapped[list["Product"]] = relationship('Product',
+                                                     secondary=product_category_association,
+                                                     back_populates="categories")
 
 
 class Review(Base):
@@ -138,6 +141,12 @@ class Review(Base):
     content: Mapped[str] = mapped_column(String(rules.MAX_REVIEW_CONTENT_LENGTH))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=False),
                                                  default=lambda: datetime.now(UTC).replace(tzinfo=None))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=False),
+                                                           onupdate=lambda: datetime.now(UTC).replace(tzinfo=None),
+                                                           nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="reviews", lazy="selectin")
+    product: Mapped["Product"] = relationship(back_populates="reviews", lazy="selectin")
 
 
 class Payment(Base):
