@@ -1,9 +1,10 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from src.schemas.order import OrderOut
 from src.schemas.review import ReviewOut
 from src.schemas.user import UserOut
-from src.deps import CurrentUserDep, OrderServiceDep
+from src.schemas.filtration import PaginationParams
+from src.deps import CurrentUserDep, OrderServiceDep, ReviewServiceDep
 
 router = APIRouter(
     prefix='/users',
@@ -22,5 +23,10 @@ async def get_my_orders(user: CurrentUserDep, order_service: OrderServiceDep):
 
 
 @router.get('/me/reviews', response_model=list[ReviewOut], status_code=status.HTTP_200_OK)
-async def get_my_reviews(user: CurrentUserDep):
-    return []
+async def get_my_reviews(
+        user: CurrentUserDep,
+        review_service: ReviewServiceDep,
+        pagination: PaginationParams = Depends()
+):
+    reviews = await review_service.get_reviews_by_user(user_id=user.id, pagination=pagination)
+    return reviews
