@@ -31,7 +31,6 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
 
         if category_ids:
             assoc = product_category_association
-
             stmt = stmt.join(assoc, models.Product.id == assoc.c.product_id)
             stmt = stmt.where(assoc.c.category_id.in_(category_ids))
 
@@ -42,3 +41,12 @@ class ProductCRUD(Creatable, Retrievable, Updatable, Deletable):
 
         result = await self.db.execute(stmt)
         return list(map(lambda x: x[0], result.all()))
+
+    async def update_product_rating(self, product_id: int, new_rating: float) -> models.Product | None:
+        product_to_update = await self.get(product_id, on_not_found='return-none')
+        if product_to_update:
+            product_to_update.rating = new_rating
+            await self.db.flush()
+            await self.db.refresh(product_to_update)
+            return product_to_update
+        return None
