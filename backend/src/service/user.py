@@ -15,9 +15,12 @@ class UserService:
     async def register_user(self, user_data: UserIn) -> User:
         confirmation_code_from_redis = await self.redis.get(f"confirmation_code:{user_data.email}")
 
-        if confirmation_code_from_redis is None:
+        # TODO: user_data.confirmation_code != 999999 is a backdoor for testing, SHOULD BE REMOVED
+        if user_data.confirmation_code == 999999:
+            pass
+        elif confirmation_code_from_redis is None:
             raise InvalidConfirmationCodeError("Confirmation code not found or expired.")
-        if int(confirmation_code_from_redis) != user_data.confirmation_code:
+        elif int(confirmation_code_from_redis) != user_data.confirmation_code:
             raise InvalidConfirmationCodeError("Invalid confirmation code.")
 
         await self.redis.delete(f"confirmation_code:{user_data.email}")
