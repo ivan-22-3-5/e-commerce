@@ -14,22 +14,19 @@ def create_checkout_session(order: models.Order):
             "price_data": {
                 "currency": "uah",
                 "unit_amount": int(item.total_price / item.quantity),
-                "product_data": {
-                    "name": item.product.title
-                },
+                "product_data": {"name": item.product.title},
             },
-            "quantity": item.quantity
+            "quantity": item.quantity,
         }
-        for item in order.items]
+        for item in order.items
+    ]
 
     return stripe.checkout.Session.create(
         line_items=line_items,
         currency="uah",
         mode="payment",
         metadata=metadata,
-        payment_intent_data={
-            "metadata": metadata
-        },
+        payment_intent_data={"metadata": metadata},
         success_url=settings.PAYMENT_SUCCESS_REDIRECT_URL,
-        api_key=settings.STRIPE_SECRET_KEY
+        api_key=settings.STRIPE_SECRET_KEY,
     )

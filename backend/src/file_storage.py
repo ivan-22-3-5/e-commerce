@@ -17,14 +17,14 @@ class FileStorage(ABC):
 
 
 class LocalFileStorage(FileStorage):
-    def __init__(self, base_path: str = 'files'):
-        self.base_path = base_path.strip('/')
+    def __init__(self, base_path: str = "files"):
+        self.base_path = base_path.strip("/")
 
     async def save(self, file: bytes, path: str):
         filepath = self.base_path + "/" + path
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-        async with aiofiles.open(filepath, 'wb') as f:
+        async with aiofiles.open(filepath, "wb") as f:
             await f.write(file)
 
     async def delete(self, path: str):

@@ -16,11 +16,11 @@ class Rules(BaseSettings):
 
     CONFIRMATION_CODE_LENGTH: int = 6
     CONFIRMATION_CODE_LOWER_BOUND: int = 10 ** (CONFIRMATION_CODE_LENGTH - 1)
-    CONFIRMATION_CODE_UPPER_BOUND: int = 10 ** CONFIRMATION_CODE_LENGTH - 1
+    CONFIRMATION_CODE_UPPER_BOUND: int = 10**CONFIRMATION_CODE_LENGTH - 1
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='src/.env', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file="src/.env", env_file_encoding="utf-8")
 
     ACCESS_TOKEN_EXPIRATION_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRATION_DAYS: int = 15
@@ -31,17 +31,17 @@ class Settings(BaseSettings):
 
     MAX_IMAGES_PER_PRODUCT: int = 10
     FILE_SIZE_LIMIT: int = 10 * 1024 * 1024
-    SUPPORTED_IMAGE_TYPES: list[str] = ['image/jpeg', 'image/png']
-    FILES_DIR: str = 'static/product_images'
-    IMAGES_HOST: str = 'http://localhost:8000'
-    IMAGES_BASE_PATH: str = '/static/product_images/'
+    SUPPORTED_IMAGE_TYPES: list[str] = ["image/jpeg", "image/png"]
+    FILES_DIR: str = "static/product_images"
+    IMAGES_HOST: str = "http://localhost:8000"
+    IMAGES_BASE_PATH: str = "/static/product_images/"
     IMAGES_BASE_URL: str = IMAGES_HOST + IMAGES_BASE_PATH
 
     CORS_ORIGINS: list[str] = ["*"]
 
-    SAME_SITE_COOKIE: Literal['strict', 'lax', 'none'] = "strict"
+    SAME_SITE_COOKIE: Literal["strict", "lax", "none"] = "strict"
 
-    PAYMENT_SUCCESS_REDIRECT_URL: str = 'http://localhost:8000/payment/success'
+    PAYMENT_SUCCESS_REDIRECT_URL: str = "http://localhost:8000/payment/success"
 
     GOOGLE_AUTH_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
     GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"

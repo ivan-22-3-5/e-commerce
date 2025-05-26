@@ -7,12 +7,10 @@ class TokenCRUD(Creatable, Retrievable, Deletable):
     key = models.TokenBase.user_id
 
     async def upsert(self, user_id: int, token: str):
-        if existing_token := await self.get(user_id, on_not_found='return-none'):
+        if existing_token := await self.get(user_id, on_not_found="return-none"):
             existing_token.token = token
         else:
-            await self.create(
-                self.__class__.model(user_id=user_id, token=token)
-            )
+            await self.create(self.__class__.model(user_id=user_id, token=token))
 
 
 class RecoveryTokenCRUD(TokenCRUD):

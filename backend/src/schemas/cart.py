@@ -12,6 +12,6 @@ class CartOut(BaseModel):
     items: list[ItemOut]
     total_price: int
 
-    @field_serializer('total_price')
+    @field_serializer("total_price")
     def serialize_total_price(self, value) -> float:
         return round(value / 100, 2)

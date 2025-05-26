@@ -12,18 +12,22 @@ class ProductService:
         self.product_crud = product_crud
         self.file_storage = file_storage
 
-    async def get_products(self, pagination: PaginationParams = None, is_active: bool = None):
-        return await self.product_crud.get_all(pagination=pagination, is_active=is_active)
+    async def get_products(
+        self, pagination: PaginationParams = None, is_active: bool = None
+    ):
+        return await self.product_crud.get_all(
+            pagination=pagination, is_active=is_active
+        )
 
-    async def search_products(self, q: str,
-                              categories: list[int] = None,
-                              pagination: PaginationParams = None):
-        return await self.product_crud.search(q, category_ids=categories, pagination=pagination)
+    async def search_products(
+        self, q: str, categories: list[int] = None, pagination: PaginationParams = None
+    ):
+        return await self.product_crud.search(
+            q, category_ids=categories, pagination=pagination
+        )
 
     async def create_product(self, product: ProductIn):
-        return await self.product_crud.create(Product(
-            **product.model_dump()
-        ))
+        return await self.product_crud.create(Product(**product.model_dump()))
 
     async def update_product(self, product_id: int, product_update: ProductUpdate):
         return await self.product_crud.update(product_id, product_update)
@@ -49,7 +53,9 @@ class ProductService:
         new_images = set(images)
 
         if not new_images.issubset(current_images):
-            raise ResourceDoesNotExistError("One or more of the specified images does not exist")
+            raise ResourceDoesNotExistError(
+                "One or more of the specified images does not exist"
+            )
 
         for filename in current_images - new_images:
             await self.file_storage.delete(f"{product_id}/{filename}")

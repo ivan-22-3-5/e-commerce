@@ -14,10 +14,15 @@ class CartService:
     async def get_cart(self, user_id: int) -> Cart:
         items = await self.cart_crud.get_all_by_user_id(user_id)
         return Cart(
-            items=[Item(product_id=item.product_id,
-                        quantity=item.quantity,
-                        total_price=item.total_price) for item in items],
-            total_price=sum(item.total_price for item in items)
+            items=[
+                Item(
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    total_price=item.total_price,
+                )
+                for item in items
+            ],
+            total_price=sum(item.total_price for item in items),
         )
 
     async def add_item(self, user_id: int, item: ItemIn):
@@ -29,9 +34,8 @@ class CartService:
         else:
             await self.cart_crud.create(
                 CartItem(
-                    user_id=user_id,
-                    product_id=item.product_id,
-                    quantity=item.quantity)
+                    user_id=user_id, product_id=item.product_id, quantity=item.quantity
+                )
             )
 
     async def remove_item(self, user_id: int, item: ItemIn):

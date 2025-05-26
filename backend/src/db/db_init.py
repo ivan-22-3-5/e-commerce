@@ -7,7 +7,8 @@ from src.db import models
 # TODO: add support for ukrainian language
 async def create_product_fulltext_index(engine: AsyncEngine):
     async with engine.begin() as conn:
-        await conn.execute(text("""
+        await conn.execute(
+            text("""
             DO $$
             BEGIN
                 IF NOT EXISTS (
@@ -22,7 +23,8 @@ async def create_product_fulltext_index(engine: AsyncEngine):
                 END IF;
             END
             $$;
-        """))
+        """)
+        )
 
 
 async def create_models(engine: AsyncEngine):

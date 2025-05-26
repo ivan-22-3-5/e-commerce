@@ -1,10 +1,12 @@
-from typing import Literal
-
 from src.crud import RefreshTokenCRUD, RecoveryTokenCRUD
 
 
 class TokenService:
-    def __init__(self, refresh_token_crud: RefreshTokenCRUD, recovery_token_crud: RecoveryTokenCRUD):
+    def __init__(
+        self,
+        refresh_token_crud: RefreshTokenCRUD,
+        recovery_token_crud: RecoveryTokenCRUD,
+    ):
         self.refresh_token_crud = refresh_token_crud
         self.recovery_token_crud = recovery_token_crud
 
@@ -21,11 +23,15 @@ class TokenService:
         await self.recovery_token_crud.delete(user_id)
 
     async def is_recovery_token_valid(self, user_id: int, token: str) -> bool:
-        db_token = await self.recovery_token_crud.get(user_id, on_not_found='return-none')
+        db_token = await self.recovery_token_crud.get(
+            user_id, on_not_found="return-none"
+        )
 
         return db_token and db_token.token == token
 
     async def is_refresh_token_valid(self, user_id: int, token: str) -> bool:
-        db_token = await self.refresh_token_crud.get(user_id, on_not_found='return-none')
+        db_token = await self.refresh_token_crud.get(
+            user_id, on_not_found="return-none"
+        )
 
         return db_token and db_token.token == token

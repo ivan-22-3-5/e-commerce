@@ -1,5 +1,6 @@
 # TODO: consider renaming of the exceptions in this module
 
+
 class PetStoreApiError(Exception):
     def __init__(self, message: str = "Service is not available", headers=None):
         self.message = message

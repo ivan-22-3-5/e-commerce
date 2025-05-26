@@ -5,7 +5,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.custom_exceptions import ResourceDoesNotExistError, ResourceAlreadyExistsError, DependentEntityExistsError
+from src.custom_exceptions import (
+    ResourceDoesNotExistError,
+    ResourceAlreadyExistsError,
+    DependentEntityExistsError,
+)
 from src.db.db import Base
 from src.logger import logger
 from src.schemas.base import ObjUpdate
@@ -23,23 +27,29 @@ class _CRUDBase:
         result = await self.db.execute(select(self.__class__.model).filter(criteria))
         return result.scalars().first()
 
-    async def _get_all(self,
-                       criteria,
-                       pagination: PaginationParams = None,
-                       order_by=None,
-                       for_update: bool = False):
-        q = (select(self.__class__.model)
-             .filter(criteria)
-             .order_by(order_by)
-             .limit(pagination and pagination.limit)
-             .offset(pagination and pagination.offset))
+    async def _get_all(
+        self,
+        criteria,
+        pagination: PaginationParams = None,
+        order_by=None,
+        for_update: bool = False,
+    ):
+        q = (
+            select(self.__class__.model)
+            .filter(criteria)
+            .order_by(order_by)
+            .limit(pagination and pagination.limit)
+            .offset(pagination and pagination.offset)
+        )
         result = await self.db.execute(q.with_for_update() if for_update else q)
         return result.scalars().all()
 
     def __init_subclass__(cls, **kwargs):
         if cls.__base__ is not _CRUDBase:
             if cls.model is None or cls.key is None:
-                raise TypeError(f"Class {cls.__name__} must define 'model' and 'key' class attributes.")
+                raise TypeError(
+                    f"Class {cls.__name__} must define 'model' and 'key' class attributes."
+                )
 
 
 class Creatable(_CRUDBase):
@@ -54,11 +64,15 @@ class Creatable(_CRUDBase):
 
             if "UniqueViolationError" in error_message:
                 raise ResourceAlreadyExistsError(
-                    _craft_already_exists_error_message(self.__class__.model, error_message)
+                    _craft_already_exists_error_message(
+                        self.__class__.model, error_message
+                    )
                 )
             elif "ForeignKeyViolationError" in error_message:
                 raise ResourceDoesNotExistError(
-                    _craft_doesnt_exist_error_message(self.__class__.model, error_message)
+                    _craft_doesnt_exist_error_message(
+                        self.__class__.model, error_message
+                    )
                 )
             else:
                 logger.error(f"Unexpected IntegrityError: {e}")
@@ -66,20 +80,33 @@ class Creatable(_CRUDBase):
 
 
 class Retrievable(_CRUDBase):
-    async def get(self, key, *, on_not_found: Literal['raise-error', 'return-none'] = 'raise-error'):
-        if (entity := await self._get_one(self.__class__.key == key)) is None and on_not_found == 'raise-error':
+    async def get(
+        self,
+        key,
+        *,
+        on_not_found: Literal["raise-error", "return-none"] = "raise-error",
+    ):
+        if (
+            entity := await self._get_one(self.__class__.key == key)
+        ) is None and on_not_found == "raise-error":
             raise ResourceDoesNotExistError(
-                f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist.")
+                f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist."
+            )
         return entity
 
 
 class Updatable(_CRUDBase):
-
-    async def update(self, key, obj_update: ObjUpdate, *,
-                     predicate: Callable[[Any], bool] = None,
-                     on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
-        if ((entity_to_update := await self._get_one(self.__class__.key == key)) is None
-                and on_not_found == 'raise-error'):
+    async def update(
+        self,
+        key,
+        obj_update: ObjUpdate,
+        *,
+        predicate: Callable[[Any], bool] = None,
+        on_not_found: Literal["raise-error", "ignore"] = "raise-error",
+    ):
+        if (
+            entity_to_update := await self._get_one(self.__class__.key == key)
+        ) is None and on_not_found == "raise-error":
             raise ResourceDoesNotExistError(
                 f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist."
             )
@@ -94,12 +121,16 @@ class Updatable(_CRUDBase):
 
 
 class Deletable(_CRUDBase):
-    async def delete(self, key, *,
-                     predicate: Callable[[Any], bool] = None,
-                     on_not_found: Literal['raise-error', 'ignore'] = 'raise-error'):
+    async def delete(
+        self,
+        key,
+        *,
+        predicate: Callable[[Any], bool] = None,
+        on_not_found: Literal["raise-error", "ignore"] = "raise-error",
+    ):
         if (
-                (entity_to_delete := await self._get_one(self.__class__.key == key)) is None
-                and on_not_found == 'raise-error'):
+            entity_to_delete := await self._get_one(self.__class__.key == key)
+        ) is None and on_not_found == "raise-error":
             raise ResourceDoesNotExistError(
                 f"{self.__class__.model.__name__} with the given {str(self.__class__.key).split('.')[-1]} does not exist."
             )
@@ -112,7 +143,10 @@ class Deletable(_CRUDBase):
 
                 if "ForeignKeyViolationError" in error_message:
                     raise DependentEntityExistsError(
-                        _craft_dependent_entity_exist_error_message(self.__class__.model, error_message))
+                        _craft_dependent_entity_exist_error_message(
+                            self.__class__.model, error_message
+                        )
+                    )
                 else:
                     logger.error(f"Unexpected IntegrityError: {e}")
 
@@ -129,26 +163,28 @@ def _craft_already_exists_error_message(model: Base, raw_sql_error_msg: str) -> 
 def _craft_doesnt_exist_error_message(model: Base, raw_sql_error_msg: str) -> str:
     err_msg = f"Some entity {model.__name__} depends on does not exists"
 
-    if (
-            (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg))
-            and
-            (table_match := re.search(r"not present in table \"(\w+)\"", raw_sql_error_msg))
+    if (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg)) and (
+        table_match := re.search(r"not present in table \"(\w+)\"", raw_sql_error_msg)
     ):
         err_msg = f"There are no {table_match.group(1)} with the {key_match.group(1)}={key_match.group(2)}"
 
     return err_msg
 
 
-def _craft_dependent_entity_exist_error_message(model: Base, raw_sql_error_msg: str) -> str:
+def _craft_dependent_entity_exist_error_message(
+    model: Base, raw_sql_error_msg: str
+) -> str:
     err_msg = f"There is some other entity that depends on {model.__name__}"
 
-    if (
-            (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg))
-            and
-            (table_match := re.search(r"is still referenced from table \"(\w+)\"", raw_sql_error_msg))
+    if (key_match := re.search(r"Key \((\w+)\)=\((\w+)\)", raw_sql_error_msg)) and (
+        table_match := re.search(
+            r"is still referenced from table \"(\w+)\"", raw_sql_error_msg
+        )
     ):
-        err_msg = (f"There is some other entity in relation {table_match.group(1)} "
-                   f"that depends on {model.__name__} "
-                   f"with the {key_match.group(1)}={key_match.group(2)}")
+        err_msg = (
+            f"There is some other entity in relation {table_match.group(1)} "
+            f"that depends on {model.__name__} "
+            f"with the {key_match.group(1)}={key_match.group(2)}"
+        )
 
     return err_msg

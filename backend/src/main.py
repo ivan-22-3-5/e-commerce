@@ -9,7 +9,16 @@ from fastapi.responses import JSONResponse
 from src.config import settings
 from src.db.db import engine
 from src.db.db_init import init_db
-from src.routers import auth, users, orders, products, categories, reviews, cart, payments
+from src.routers import (
+    auth,
+    users,
+    orders,
+    products,
+    categories,
+    reviews,
+    cart,
+    payments,
+)
 from src.custom_exceptions import (
     PetStoreApiError,
     ResourceDoesNotExistError,
@@ -26,7 +35,7 @@ from src.custom_exceptions import (
     EmailNotConfirmedError,
     DependentEntityExistsError,
     PaymentGatewayError,
-    EmptyCartError
+    EmptyCartError,
 )
 
 
@@ -57,11 +66,15 @@ app.include_router(cart.router)
 app.include_router(payments.router)
 
 os.makedirs(settings.FILES_DIR, exist_ok=True)
-app.mount(settings.IMAGES_BASE_PATH, StaticFiles(directory=settings.FILES_DIR), name="static")
+app.mount(
+    settings.IMAGES_BASE_PATH, StaticFiles(directory=settings.FILES_DIR), name="static"
+)
 
 
 def create_exception_handler(status_code: int, initial_detail: str):
-    async def exception_handler(_: Request, exception: PetStoreApiError) -> JSONResponse:
+    async def exception_handler(
+        _: Request, exception: PetStoreApiError
+    ) -> JSONResponse:
         content = {"detail": initial_detail}
         if exception.message:
             content["detail"] = exception.message
@@ -75,23 +88,38 @@ def create_exception_handler(status_code: int, initial_detail: str):
 exception_handlers_map = [
     (ResourceDoesNotExistError, status.HTTP_404_NOT_FOUND, "Resource not found"),
     (ResourceAlreadyExistsError, status.HTTP_409_CONFLICT, "Resource already exists"),
-    (NotEnoughRightsError, status.HTTP_403_FORBIDDEN, "Not enough rights to execute the operation"),
+    (
+        NotEnoughRightsError,
+        status.HTTP_403_FORBIDDEN,
+        "Not enough rights to execute the operation",
+    ),
     (InvalidTokenError, status.HTTP_401_UNAUTHORIZED, "Invalid token"),
     (InvalidCredentialsError, status.HTTP_401_UNAUTHORIZED, "Invalid credentials"),
     (FileTooLargeError, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large"),
-    (NotSupportedFileTypeError, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "File type is not allowed"),
+    (
+        NotSupportedFileTypeError,
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        "File type is not allowed",
+    ),
     (LimitExceededError, status.HTTP_409_CONFLICT, "Limit exceeded"),
-    (InvalidConfirmationCodeError, status.HTTP_401_UNAUTHORIZED, "Invalid confirmation code"),
+    (
+        InvalidConfirmationCodeError,
+        status.HTTP_401_UNAUTHORIZED,
+        "Invalid confirmation code",
+    ),
     (InsufficientStockError, status.HTTP_409_CONFLICT, "Out of stock"),
     (InvalidOrderStatusError, status.HTTP_409_CONFLICT, "Invalid order status"),
     (EmailNotConfirmedError, status.HTTP_403_FORBIDDEN, "Email not confirmed"),
     (DependentEntityExistsError, status.HTTP_409_CONFLICT, "Dependent entity exists"),
-    (PaymentGatewayError, status.HTTP_500_INTERNAL_SERVER_ERROR, "Payment gateway error"),
+    (
+        PaymentGatewayError,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        "Payment gateway error",
+    ),
     (EmptyCartError, status.HTTP_409_CONFLICT, "Cart is empty"),
 ]
 
 for exc, code, message in exception_handlers_map:
     app.add_exception_handler(
-        exc_class_or_status_code=exc,
-        handler=create_exception_handler(code, message)
+        exc_class_or_status_code=exc, handler=create_exception_handler(code, message)
     )

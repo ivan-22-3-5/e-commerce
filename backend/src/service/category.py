@@ -20,6 +20,8 @@ class CategoryService:
         product = await self.product_crud.get(product_id)
 
         if category in await product.awaitable_attrs.categories:
-            raise ResourceAlreadyExistsError(f"Product is already associated with the {category_id} category")
+            raise ResourceAlreadyExistsError(
+                f"Product is already associated with the {category_id} category"
+            )
 
         product.categories.append(category)

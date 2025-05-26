@@ -8,16 +8,18 @@ from .config import celery_config
 
 
 def send_email(email_address: str, subject: str, template_name: str, **kwargs):
-    env = Environment(loader=FileSystemLoader(['src/email_templates', 'src/celery_/email_templates']))
+    env = Environment(
+        loader=FileSystemLoader(["src/email_templates", "src/celery_/email_templates"])
+    )
     template = env.get_template(template_name)
     html_content = template.render(**kwargs)
 
     msg = MIMEMultipart()
-    msg['From'] = celery_config.SMTP_MAIL
-    msg['To'] = email_address
-    msg['Subject'] = subject
+    msg["From"] = celery_config.SMTP_MAIL
+    msg["To"] = email_address
+    msg["Subject"] = subject
 
-    msg.attach(MIMEText(html_content, 'html'))
+    msg.attach(MIMEText(html_content, "html"))
 
     with smtplib.SMTP(celery_config.SMTP_SERVER, celery_config.SMTP_PORT) as server:
         server.starttls()
