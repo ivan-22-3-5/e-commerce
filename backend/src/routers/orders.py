@@ -35,7 +35,7 @@ async def cancel_order(order_id: int, user: CurrentUserDep, order_service: Order
     order = await order_service.get_order(order_id)
     if order.user_id != user.id:
         raise NotEnoughRightsError("User is not the order owner")
-    await order_service.cancel_order(order_id, user.id)
+    await order_service.cancel_order(order_id)
 
 
 @router.patch('/{order_id}/status', status_code=status.HTTP_200_OK, response_model=Message,
